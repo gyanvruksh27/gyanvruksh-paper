@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પ્રશ્ન બેંક - જ્ઞાન વૃક્ષ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta+Vaani:wght@300;400;600;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/question-bank.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h2>જ્ઞાન વૃક્ષ 🌳</h2></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><span>🏠 ડેશબોર્ડ</span></a>
+                <a href="paper-builder.html" class="nav-item"><span>📝 નવું પ્રશ્નપત્ર</span></a>
+                <a href="question-bank.html" class="nav-item active"><span>📚 પ્રશ્ન બેંક</span></a>
+                <a href="solutions.html" class="nav-item"><span>🖨️ PDF ડાઉનલોડ્સ</span></a>
+                <a href="settings.html" class="nav-item"><span>⚙️ સેટિંગ્સ & બેકઅપ</span></a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><h2 class="header-title">પ્રશ્ન બેંક 📚</h2></header>
+            <div class="dashboard-content">
+                <div class="toolbar">
+                    <div class="filters" style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <select id="filterStandard" class="filter-select"><option value="All">બધા ધોરણ</option><option value="9">9</option><option value="10">10</option><option value="11 (Science)">11 (Science)</option><option value="12 (Science)">12 (Science)</option><option value="11 (Arts)">11 (Arts)</option><option value="12 (Arts)">12 (Arts)</option><option value="11 (Commerce)">11 (Commerce)</option><option value="12 (Commerce)">12 (Commerce)</option></select>
+                        <select id="filterSubject" class="filter-select"><option value="All">બધા વિષયો</option></select>
+                        <select id="filterChap" class="filter-select"><option value="All">બધા પ્રકરણ</option></select>
+                        <select id="filterType" class="filter-select">
+                            <option value="All">બધા પ્રકાર</option><option value="MCQ">MCQ</option><option value="ખાલી જગ્યા">ખાલી જગ્યા</option><option value="વિકલ્પ સાથે ખાલી જગ્યા">વિકલ્પ સાથે ખાલી જગ્યા</option><option value="ખરા-ખોટા">ખરા-ખોટા</option><option value="જોડકા જોડો">જોડકા જોડો</option><option value="એક વાક્યમાં જવાબ આપો">એક વાક્યમાં</option><option value="ટૂંકમાં જવાબ આપો">ટૂંકમાં</option><option value="માગ્યા મુજબ જવાબ આપો">માગ્યા મુજબ</option><option value="સવિસ્તાર જવાબ આપો">સવિસ્તાર</option>
+                        </select>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <input type="file" id="fileImportJSON" accept=".json" style="display:none;">
+                        <!-- આ બટન ઈમ્પોર્ટ વિન્ડો ખોલશે -->
+                         <button type="button" onclick="window.triggerImport(event)" style="background: #1565c0; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 10px;">
+                            <i class="fas fa-file-import"></i> પ્રશ્નો ઈમ્પોર્ટ કરો
+                        </button>
+                        <!-- આ બટન નવો પ્રશ્ન ઉમેરવાનું મોડલ (Popup) ખોલશે -->
+                         <button type="button" onclick="window.openAddModal(event)" style="background: #2e7d32; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-plus"></i> નવો પ્રશ્ન ઉમેરો
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead><tr><th>Std/Sub</th><th>Ch</th><th>પ્રકાર</th><th style="width:40%;">પ્રશ્ન</th><th>ગુણ</th><th>એક્શન</th></tr></thead>
+                        <tbody id="questionsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal-overlay" id="questionModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="modalTitle">નવો પ્રશ્ન ઉમેરો</h3><button class="close-modal" id="btnCloseModal"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body">
+                <form id="questionForm">
+                    <input type="hidden" id="qEditId">
+                    <div class="form-row">
+                        <div class="form-group half"><label>ધોરણ *</label><select id="qStandard" required><option value="9">9</option><option value="10">10</option><option value="11 (Science)">11 (Science)</option><option value="12 (Science)">12 (Science)</option><option value="11 (Arts)">11 (Arts)</option><option value="12 (Arts)">12 (Arts)</option><option value="11 (Commerce)">11 (Commerce)</option><option value="12 (Commerce)">12 (Commerce)</option></select></div>
+                        <div class="form-group half"><label>વિષય *</label><select id="qSubject" required></select></div>
+                        <div class="form-group half"><label>પ્રકરણ *</label><input type="text" id="qChapter" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half"><label>પ્રશ્નનો પ્રકાર *</label><select id="qType" required><option value="MCQ">MCQ</option><option value="ખાલી જગ્યા">ખાલી જગ્યા</option><option value="વિકલ્પ સાથે ખાલી જગ્યા">વિકલ્પ સાથે ખાલી જગ્યા</option><option value="ખરા-ખોટા">ખરા-ખોટા</option><option value="જોડકા જોડો">જોડકા જોડો</option><option value="એક વાક્યમાં જવાબ આપો">એક વાક્યમાં</option><option value="ટૂંકમાં જવાબ આપો">ટૂંકમાં</option><option value="માગ્યા મુજબ જવાબ આપો">માગ્યા મુજબ</option><option value="સવિસ્તાર જવાબ આપો">સવિસ્તાર</option></select></div>
+                        <div class="form-group half"><label>ગુણ (1-10) *</label><input type="number" id="qMarks" min="1" max="10" required></div>
+                    </div>
+                    <div class="form-group"><label>પ્રશ્ન *</label><textarea id="qText" rows="3" required></textarea></div>
+                    <div class="form-group"><label>પ્રશ્નની આકૃતિ (વૈકલ્પિક)</label><input type="file" id="qImage" accept="image/*"><div id="imagePreview"></div></div>
+                    <div class="form-group"><label>સોલ્યુશન / જવાબ *</label><textarea id="qAnswer" rows="3" required></textarea></div>
+                    <div class="form-group"><label>ઉકેલની આકૃતિ (Solution Image - વૈકલ્પિક)</label><input type="file" id="qSolImage" accept="image/*"><div id="solImagePreview"></div></div>
+                    <button type="submit" class="btn-primary w-100"><i class="fas fa-save"></i> પ્રશ્ન સેવ કરો</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/question-bank.js"></script>
+</body>
+</html>

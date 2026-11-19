@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>સેટિંગ્સ - જ્ઞાન વૃક્ષ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta+Vaani:wght@300;400;600;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h2>જ્ઞાન વૃક્ષ 🌳</h2></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><span>🏠 ડેશબોર્ડ</span></a>
+                <a href="paper-builder.html" class="nav-item"><span>📝 નવું પ્રશ્નપત્ર</span></a>
+                <a href="question-bank.html" class="nav-item"><span>📚 પ્રશ્ન બેંક</span></a>
+                <a href="solutions.html" class="nav-item"><span>🖨️ PDF ડાઉનલોડ્સ</span></a>
+                <a href="settings.html" class="nav-item active"><span>⚙️ સેટિંગ્સ & બેકઅપ</span></a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><button class="menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button><h2 class="header-title">સેટિંગ્સ ⚙️</h2></header>
+            <div class="dashboard-content">
+                <div class="settings-grid">
+                    <!-- School Profile -->
+                    <div class="form-card">
+                        <div class="card-header"><h3>🏫 શાળાની પ્રોફાઈલ</h3></div>
+                        <form id="schoolProfileForm" class="custom-form">
+                            <div class="form-group"><label>શાળાનું નામ</label><input type="text" id="schoolName" required></div>
+                            <div class="form-group"><label>શાળાનો કોડ (Index)</label><input type="text" id="schoolCode"></div>
+                            <div class="form-group"><label>સરનામું</label><textarea id="schoolAddress" rows="2"></textarea></div>
+                            <button type="submit" class="btn-primary w-100"><i class="fas fa-save"></i> સેવ કરો</button>
+                        </form>
+                    </div>
+                    <!-- PDF Settings -->
+                    <div class="form-card">
+                        <div class="card-header"><h3>🖨️ PDF પ્રિન્ટ સેટિંગ્સ</h3></div>
+                        <form id="pdfSettingsForm" class="custom-form" style="background:#f9fbfc; padding:15px; border-radius:8px; border:1px solid #e0e0e0;">
+                            <label style="color:var(--primary-color);">હેડરમાં શું પ્રિન્ટ કરવું છે?</label>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                                <label><input type="checkbox" id="chkExamName"> પરીક્ષાનું નામ</label>
+                                <label><input type="checkbox" id="chkDate"> તારીખ</label>
+                                <label><input type="checkbox" id="chkStd"> ધોરણ</label>
+                                <label><input type="checkbox" id="chkSubject"> વિષય</label>
+                                <label><input type="checkbox" id="chkTotalMarks"> કુલ ગુણ</label>
+                            </div>
+                            <div class="form-group"><label>પ્રશ્નોનો ક્રમ</label><select id="pdfNumberingStyle"><option value="continuous">સળંગ ક્રમ (1 થી 50)</option><option value="section">વિભાગ મુજબ (દરેક વિભાગમાં 1 થી શરૂ)</option></select></div>
+                            <div class="form-group"><label>વોટરમાર્ક</label><input type="text" id="pdfWatermark" placeholder="દા.ત. જ્ઞાન વૃક્ષ"></div>
+                            <button type="button" id="btnSavePdfSettings" class="btn-secondary w-100"><i class="fas fa-cogs"></i> સેટિંગ્સ સેવ કરો</button>
+                        </form>
+                    </div>
+                    <!-- Backup & Restore -->
+                    <div class="form-card" style="grid-column: 1 / -1;">
+                        <div class="card-header"><h3>💾 ડેટા બેકઅપ અને રિસ્ટોર (Backup & Restore)</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; padding:10px; background:#fff3e0; border-radius:8px; border:1px solid #ffe0b2;">
+                            <div style="flex:1;">
+                                <p style="margin-bottom:10px; font-size:14px; color:#555;">તમારો બધો ડેટા (પ્રશ્નો, પેપર, સેટિંગ્સ) કમ્પ્યુટરમાં સુરક્ષિત રાખવા ડાઉનલોડ કરો.</p>
+                                <button id="btnBackup" class="btn-primary" style="background:#e65100;"><i class="fas fa-download"></i> બેકઅપ ડાઉનલોડ કરો</button>
+                            </div>
+                            <div style="flex:1; border-left:1px solid #ffe0b2; padding-left:15px;">
+                                <p style="margin-bottom:10px; font-size:14px; color:#555;">જૂનો બેકઅપ પાછો લાવવા (Restore) માટે ફાઈલ પસંદ કરો.</p>
+                                <input type="file" id="fileRestore" accept=".json" style="display:none;">
+                                <button id="btnRestore" class="btn-secondary" style="background:#2e7d32;"><i class="fas fa-upload"></i> ડેટા રિસ્ટોર કરો</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>

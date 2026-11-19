@@ -1,0 +1,16 @@
+{
+  "name": "Gyan Vruksh - Smart Exam Generator",
+  "short_name": "Gyan Vruksh Exam",
+  "description": "Smart Exam Paper and Solution Generator by Dr. Sanjay Parmar",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#1a5f7a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135692.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

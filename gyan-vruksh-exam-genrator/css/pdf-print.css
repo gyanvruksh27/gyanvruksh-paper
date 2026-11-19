@@ -1,0 +1,33 @@
+/* css/pdf-print.css */
+
+.a4-page { 
+    width: 100%; 
+    max-width: 794px; 
+    margin: 0 auto; 
+    padding: 20px 25px; 
+    box-sizing: border-box; 
+    background: #ffffff; 
+    font-family: 'Noto Sans Gujarati', 'Mukta Vaani', sans-serif; 
+    color: #000000; 
+    line-height: 1.7; 
+    word-wrap: break-word; 
+    overflow-wrap: break-word;
+}
+
+.print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+.print-header h1 { font-size: 22px; margin: 0 0 4px 0; font-weight: 700; }
+.print-header p { font-size: 13.5px; margin: 2px 0; color: #111; }
+
+.exam-meta { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 14.5px; font-weight: 600; margin-top: 8px; padding: 5px 0; border-top: 1px dashed #666; border-bottom: 1px dashed #666; }
+
+.sec-banner { text-align: center; font-weight: bold; font-size: 16px; margin: 14px 0 8px 0; border: 1.5px solid #000; padding: 3px; background: #f1f5f9; }
+.sec-instruction { font-size: 14.5px; font-weight: bold; margin: 8px 0 6px 0; display: flex; justify-content: space-between; }
+
+.q-row-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 8px; }
+.q-cell-text { width: 89%; padding-right: 10px; vertical-align: top; font-size: 15px; word-wrap: break-word; }
+.q-cell-marks { width: 11%; vertical-align: top; text-align: right; font-weight: bold; font-size: 14.5px; white-space: nowrap; }
+
+.p-ans-box { margin-top: 5px; padding: 6px 10px; background: #f8fafc; border-left: 3px solid #334155; font-size: 14px; }
+.mcq-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 4px; }
+.mcq-table td { width: 50%; padding: 2px 8px 2px 0; vertical-align: top; font-size: 14.5px; }
+.watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60px; color: rgba(0, 0, 0, 0.05); z-index: 0; pointer-events: none; font-weight: bold; }

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પેપર બિલ્ડર - જ્ઞાન વૃક્ષ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta+Vaani:wght@300;400;600;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/paper-builder.css">
+    <link rel="stylesheet" href="css/pdf-print.css"> <!-- પ્રિવ્યૂમાં સ્ટાઇલ માટે જરૂરી -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* પ્રિવ્યૂ મોડલ માટે કસ્ટમ સ્ટાઇલ */
+        .preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;}
+        .preview-content { background: #525659; width: 100%; max-width: 900px; height: 100%; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+        .preview-header { background: #323639; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .preview-header h3 { margin: 0; font-size: 18px; }
+        .preview-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; }
+        /* પ્રિવ્યૂનું કાગળ */
+        .preview-paper { background: white; width: 100%; max-width: 794px; min-height: 1123px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h2>જ્ઞાન વૃક્ષ 🌳</h2></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><span>🏠 ડેશબોર્ડ</span></a>
+                <a href="paper-builder.html" class="nav-item active"><span>📝 નવું પ્રશ્નપત્ર</span></a>
+                <a href="question-bank.html" class="nav-item"><span>📚 પ્રશ્ન બેંક</span></a>
+                <a href="solutions.html" class="nav-item"><span>🖨️ PDF ડાઉનલોડ્સ</span></a>
+                <a href="settings.html" class="nav-item"><span>⚙️ સેટિંગ્સ & બેકઅપ</span></a>
+            </nav>
+        </aside>
+
+        <datalist id="instructionList">
+            <option value="નીચે આપેલા પ્રશ્નોનાં જવાબ માટે સાચો વિકલ્પ પસંદ કરો">
+            <option value="નીચેનાં વિધાનો સાચા બને તે પ્રમાણે ખાલી જગ્યા પૂરો :">
+            <option value="નીચેનાં વિધાનો ખરાં છે કે ખોટાં તે જણાવો :">
+            <option value="એક વાક્ય કે શબ્દમાં જવાબ આપો :">
+            <option value="નીચે આપેલ પ્રશ્નોના યોગ્ય જોડકા જોડો :">
+            <option value="નીચે આપેલા પ્રશ્નોનો ટૂંકમાં જવાબ આપો :">
+            <option value="નીચે આપેલા પ્રશ્નોનો માગ્યા મુજબ જવાબ આપો :">
+            <option value="સવિસ્તાર જવાબ આપો :">
+        </datalist>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h2 class="header-title">પ્રશ્નપત્ર બનાવો 📝</h2>
+                <div class="header-actions">
+                    <span id="marksCounter" class="marks-counter" style="background:#e3f2fd; color:#1565c0;">પ્રશ્નો: 0 | કુલ ગુણ: 0 / 50</span>
+                    <button type="button" id="btnPreviewPaper" class="btn-secondary" style="background:#00bcd4; color:white; border:none; margin-right:10px;"><i class="fas fa-eye"></i> લાઈવ પ્રિવ્યૂ 👁️</button>
+                    <button type="button" id="btnSaveDraft" class="btn-secondary" style="background:#ff9800; color:white; border:none; margin-right:10px;"><i class="fas fa-save"></i> Save as Draft 💾</button>
+                    <button type="button" id="btnSavePaper" class="btn-primary"><i class="fas fa-save"></i> સેવ કરો</button>
+                </div>
+            </header>
+
+            <div class="builder-workspace">
+                <div class="builder-panel left-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-filter"></i> પ્રશ્ન બેંક ફિલ્ટર્સ</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                            <select id="filterStd" class="b-filter"><option value="All">ધોરણ</option><option value="9">9</option><option value="10">10</option><option value="11 (Science)">11 (Science)</option><option value="12 (Science)">12 (Science)</option><option value="11 (Arts)">11 (Arts)</option><option value="12 (Arts)">12 (Arts)</option><option value="11 (Commerce)">11 (Commerce)</option><option value="12 (Commerce)">12 (Commerce)</option></select>
+                            <select id="filterSub" class="b-filter"><option value="All">વિષય</option></select>
+                            <select id="filterChap" class="b-filter"><option value="All">પ્રકરણ</option></select>
+                            <select id="filterType" class="b-filter"><option value="All">પ્રકાર</option><option value="MCQ">MCQ</option><option value="ખાલી જગ્યા">ખાલી જગ્યા</option><option value="વિકલ્પ સાથે ખાલી જગ્યા">વિકલ્પ સાથે ખાલી જગ્યા</option><option value="ખરા-ખોટા">ખરા-ખોટા</option><option value="જોડકા જોડો">જોડકા જોડો</option><option value="એક વાક્યમાં જવાબ આપો">એક વાક્યમાં</option><option value="ટૂંકમાં જવાબ આપો">ટૂંકમાં</option><option value="માગ્યા મુજબ જવાબ આપો">માગ્યા મુજબ</option><option value="સવિસ્તાર જવાબ આપો">સવિસ્તાર</option></select>
+                            <select id="filterMarks" class="b-filter"><option value="All">ગુણ</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+                        </div>
+                        <div style="margin-top:10px; display:flex; gap:10px; background:#eef5f9; padding:8px; border-radius:5px;">
+                            <select id="selectSection" class="b-filter" style="font-weight:bold;">
+                                <option value="None">વિભાગ પસંદ ન કરવો</option>
+                                <option value="A" selected>વિભાગ - A</option><option value="B">વિભાગ - B</option>
+                                <option value="C">વિભાગ - C</option><option value="D">વિભાગ - D</option>
+                                <option value="E">વિભાગ - E</option><option value="F">વિભાગ - F</option><option value="G">વિભાગ - G</option>
+                            </select>
+                            <button type="button" id="btnAddSelected" class="btn-primary" style="flex:1;"><i class="fas fa-check"></i> ઉમેરો</button>
+                        </div>
+                    </div>
+                    <div class="question-list-container" id="bankList"></div>
+                </div>
+
+                <div class="builder-panel right-panel">
+                    <div class="panel-header paper-setup">
+                        <div style="margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:10px; display:flex; gap:10px;">
+                            <select id="loadSavedPaper" style="flex:1; padding:8px; font-weight:bold; background:#fff9c4; border:1px solid #fbc02d; border-radius:4px;">
+                                <option value="">+ નવું પ્રશ્નપત્ર બનાવો (અથવા જૂનું પેપર એડિટ કરવા અહીથી પસંદ કરો)</option>
+                            </select>
+                            <button type="button" id="btnDuplicatePaper" class="btn-secondary" style="background:#26a69a; color:white; border:none; border-radius:4px; padding:0 15px;"><i class="fas fa-copy"></i> પેપરની કોપી 📋</button>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <input type="text" id="paperTitle" placeholder="પરીક્ષાનું નામ" required style="flex:2; padding:8px;">
+                            <select id="paperStd" style="padding:8px;"><option value="9">9</option><option value="10">10</option><option value="11 (Science)">11 (Science)</option><option value="12 (Science)">12 (Science)</option><option value="11 (Arts)">11 (Arts)</option><option value="12 (Arts)">12 (Arts)</option><option value="11 (Commerce)">11 (Commerce)</option><option value="12 (Commerce)">12 (Commerce)</option></select>
+                            <input type="text" id="paperSubject" placeholder="વિષય" style="flex:1; padding:8px;">
+                            <input type="date" id="paperDate" style="padding:8px;" title="તારીખ">
+                            <input type="number" id="paperTotalMarks" placeholder="કસ્ટમ ગુણ" value="50" style="width:100px; padding:8px;">
+                        </div>
+                    </div>
+                    <div class="paper-canvas" id="paperCanvas" style="padding:15px; overflow-y:auto; flex:1;">
+                        <div id="sectionsWrapper"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 👁️ લાઈવ પ્રિવ્યૂ મોડલ (Live Preview Modal) -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <h3><i class="fas fa-eye"></i> લાઈવ પ્રિવ્યૂ (આ પેપર PDF માં આવું દેખાશે)</h3>
+                <button type="button" id="btnClosePreview" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-body">
+                <div class="preview-paper a4-page" id="previewCanvas">
+                    <!-- અહી PDF જેવું ફોર્મેટ જનરેટ થશે -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- પ્રિવ્યૂ જનરેટ કરવા માટે pdf-generator નું કોમન ફંક્શન વાપરવા સ્ક્રિપ્ટ એડ કરી છે -->
+    <script src="js/pdf-generator.js"></script> 
+    <script src="js/app.js"></script>
+    <script src="js/builder.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF ડાઉનલોડ્સ - જ્ઞાન વૃક્ષ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta+Vaani:wght@300;400;600;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/solutions.css">
+    <link rel="stylesheet" href="css/pdf-print.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h2>જ્ઞાન વૃક્ષ 🌳</h2></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><span>🏠 ડેશબોર્ડ</span></a>
+                <a href="paper-builder.html" class="nav-item"><span>📝 નવું પ્રશ્નપત્ર</span></a>
+                <a href="question-bank.html" class="nav-item"><span>📚 પ્રશ્ન બેંક</span></a>
+                <a href="solutions.html" class="nav-item active"><span>🖨️ PDF ડાઉનલોડ્સ</span></a>
+                <a href="settings.html" class="nav-item"><span>⚙️ સેટિંગ્સ & બેકઅપ</span></a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header"><h2 class="header-title">તમારા પ્રશ્નપત્રો અને સોલ્યુશન્સ 🖨️</h2></header>
+            <div class="dashboard-content">
+                <div class="paper-grid" id="paperGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- છુપાયેલો કન્ટેનર: જ્યાંથી PDF જનરેટ થાય છે -->
+    <div style="display:none;"><div id="pdfContent" class="a4-page"></div></div>
+
+    <script src="js/app.js"></script>
+    <script src="js/pdf-generator.js"></script>
+    <script src="js/solutions.js"></script>
+</body>
+</html>

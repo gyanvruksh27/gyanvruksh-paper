@@ -1,0 +1,122 @@
+/* css/forms.css */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 25px;
+}
+
+.card-header {
+    border-bottom: 2px solid #eef5f9;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.card-header h3 {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-form .form-group {
+    margin-bottom: 18px;
+}
+
+.custom-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.custom-form input, .custom-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: var(--font-gu);
+    font-size: 1rem;
+}
+
+.custom-form input:focus, .custom-form textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 5px rgba(26, 95, 122, 0.2);
+}
+
+.w-100 { width: 100%; }
+
+.config-section h4 {
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: var(--font-gu);
+}
+
+.btn-secondary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: var(--font-gu);
+}
+
+.badge-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.badge-list li {
+    background: #eef5f9;
+    color: var(--primary-color);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d0e3ec;
+}
+
+.delete-badge {
+    cursor: pointer;
+    color: var(--danger);
+    font-size: 0.8rem;
+}
+
+.success-msg {
+    color: var(--success);
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+.mt-20 { margin-top: 20px; }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .settings-grid { grid-template-columns: 1fr; }
+}
