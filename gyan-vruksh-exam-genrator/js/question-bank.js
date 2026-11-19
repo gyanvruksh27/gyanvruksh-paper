@@ -1195,6 +1195,39 @@
         window.refreshData();
         alert("✅ નવો પ્રશ્ન સફળતાપૂર્વક ઉમેરાઈ ગયો!");
     };
+    // 🌐 ઓનલાઈન questions.json માંથી પ્રશ્નો ઓટો-સિંક કરવાની સિસ્ટમ
+    window.syncOnlineQuestions = async function() {
+        try {
+            const res = await fetch('./questions.json?t=' + Date.now());
+            if (!res.ok) return;
+            const onlineQs = await res.json();
+            if (!Array.isArray(onlineQs)) return;
 
-    document.addEventListener('DOMContentLoaded', renderApp);
+            const localQs = JSON.parse(localStorage.getItem('gyanVruksh_questions')) || [];
+            const localIds = new Set(localQs.map(q => q.id));
+            let addedCount = 0;
+
+            onlineQs.forEach(q => {
+                if (!localIds.has(q.id)) {
+                    localQs.push(q);
+                    localIds.add(q.id);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                localStorage.setItem('gyanVruksh_questions', JSON.stringify(localQs));
+                window.updateDynamicFilters('all');
+                window.refreshData();
+            }
+        } catch (err) {
+            console.log('Online sync skipped:', err);
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderApp();
+        window.syncOnlineQuestions();
+    });
+
 })();
