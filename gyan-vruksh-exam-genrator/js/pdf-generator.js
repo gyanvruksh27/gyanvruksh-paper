@@ -1,10 +1,10 @@
-// js/pdf-generator.js — Gyan Vruksh 2.5 (Clean JS + Auto-Instruction Grouping + Multi-Language)
+// js/pdf-generator.js — Gyan Vruksh 3.0 (Clean JS + Crisp Question & Solution Images + Section-A Board Order + Word Alignment Fix)
 
 window.GV_LANG_LABELS = {
-    gu: { std: 'ધોરણ', sub: 'વિષય', date: 'તારીખ', marks: 'કુલ ગુણ', section: 'વિભાગ', ans: 'ઉત્તર', colA: 'વિભાગ A', colB: 'વિભાગ B', solTitle: '(Answer Key)' },
-    en: { std: 'Std', sub: 'Subject', date: 'Date', marks: 'Total Marks', section: 'SECTION', ans: 'Answer', colA: 'Column A', colB: 'Column B', solTitle: '(Answer Key)' },
-    hi: { std: 'कक्षा', sub: 'विषय', date: 'दिनांक', marks: 'कुल अंक', section: 'विभाग', ans: 'उत्तर', colA: 'विभाग अ', colB: 'विभाग ब', solTitle: '(उत्तर कुंजी)' },
-    sa: { std: 'कक्षा', sub: 'विषयः', date: 'दिनाङ्कः', marks: 'कुल अङ्काः', section: 'विभागः', ans: 'उत्तरम्', colA: 'विभागः अ', colB: 'विभागः ब', solTitle: '(उत्तरमाला)' }
+    gu: { std: 'ધોરણ', sub: 'વિષય', date: 'તારીખ', marks: 'કુલ ગુણ', section: 'વિભાગ', ans: 'ઉત્તર', colA: 'વિભાગ A', colB: 'વિભાગ B', solTitle: '(Answer Key)', anyOf: 'કોઈ પણ' },
+    en: { std: 'Std', sub: 'Subject', date: 'Date', marks: 'Total Marks', section: 'SECTION', ans: 'Answer', colA: 'Column A', colB: 'Column B', solTitle: '(Answer Key)', anyOf: 'Attempt any' },
+    hi: { std: 'कक्षा', sub: 'विषय', date: 'दिनांक', marks: 'कुल अंक', section: 'विभाग', ans: 'उत्तर', colA: 'विभाग अ', colB: 'विभाग ब', solTitle: '(उत्तर कुंजी)', anyOf: 'कोई भी' },
+    sa: { std: 'कक्षा', sub: 'विषयः', date: 'दिनाङ्कः', marks: 'कुल अङ्काः', section: 'विभागः', ans: 'उत्तरम्', colA: 'विभागः अ', colB: 'विभागः ब', solTitle: '(उत्तरमाला)', anyOf: 'केचन' }
 };
 
 window.GV_PDF_DEFAULT_INST = {
@@ -14,6 +14,19 @@ window.GV_PDF_DEFAULT_INST = {
     'ખરા-ખોટા': 'નીચેના વિધાનો ખરાં છે કે ખોટાં તે જણાવો.',
     'જોડકા જોડો': 'યોગ્ય જોડકાં જોડો.',
     'એક વાક્યમાં જવાબ આપો': 'નીચેના પ્રશ્નોના એક વાક્યમાં ઉત્તર લખો.',
+    'એક શબ્દમાં ઉત્તર': 'નીચેના પ્રશ્નોના એક શબ્દમાં ઉત્તર લખો.',
+    'વ્યાખ્યા આપો': 'નીચે આપેલા પદોની વ્યાખ્યા આપો.',
+    'સૂત્ર / એકમ લખો': 'નીચે આપેલાના રાસાયણિક સૂત્ર અથવા SI એકમ લખો.',
+    'પૂરું નામ લખો': 'નીચે આપેલા સંક્ષિપ્ત નામોના પૂરા નામ લખો.',
+    'અસંગત પદ શોધો': 'નીચે આપેલામાંથી અસંગત પદ શોધીને લખો.',
+    'સંબંધ પૂર્ણ કરો': 'પ્રથમ જોડીનો સંબંધ સમજી બીજી જોડી પૂર્ણ કરો.',
+    'આકૃતિ ઓળખો': 'આપેલ આકૃતિ ઓળખી તેના નામ અથવા ભાગો જણાવો.',
+    'વિધાન અને કારણ': 'નીચે આપેલા વિધાન (A) અને કારણ (R) વાંચી સાચો વિકલ્પ પસંદ કરો.',
+    'સમાનાર્થી / વિરુદ્ધાર્થી': 'માગ્યા મુજબ સમાનાર્થી કે વિરુદ્ધાર્થી શબ્દ લખો.',
+    'જોડણી સુધારો': 'નીચે આપેલા શબ્દોની સાચી જોડણી લખો.',
+    'રૂઢિપ્રયોગ': 'નીચે આપેલા રૂઢિપ્રયોગનો અર્થ આપી વાક્યમાં પ્રયોગ કરો.',
+    'Do as directed': 'Do as directed.',
+    'Identify the function': 'Identify the language function used in the following sentences.',
     'ટૂંકમાં જવાબ આપો': 'નીચેના પ્રશ્નોના ટૂંકમાં ઉત્તર લખો.',
     'માગ્યા મુજબ જવાબ આપો': 'નીચેના પ્રશ્નોના માગ્યા મુજબ ઉત્તર લખો.',
     'સવિસ્તાર જવાબ આપો': 'નીચેના પ્રશ્નોના સવિસ્તાર ઉત્તર લખો.'
@@ -32,14 +45,19 @@ window.detectPaperLanguage = function(paper) {
 window.getPDFQuestionInstruction = function(q) {
     if (!q || q.type === 'instruction') return '';
     if (q.instruction && String(q.instruction).trim() !== '') return String(q.instruction).trim();
+    if (typeof window.getEffectiveInstruction === 'function') return window.getEffectiveInstruction(q);
     if (window.DEFAULT_INSTRUCTIONS && window.DEFAULT_INSTRUCTIONS[q.type]) return window.DEFAULT_INSTRUCTIONS[q.type];
     return window.GV_PDF_DEFAULT_INST[q.type] || '';
 };
 
 function resolvePaperObj(paperOrId) {
     if (typeof paperOrId === 'object' && paperOrId !== null) return paperOrId;
-    const papers = JSON.parse(localStorage.getItem('gyanVruksh_papers')) || [];
-    return papers.find(p => p.id === paperOrId);
+    try {
+        const papers = JSON.parse(localStorage.getItem('gyanVruksh_papers')) || [];
+        return papers.find(p => p.id === paperOrId);
+    } catch (e) {
+        return null;
+    }
 }
 
 window.downloadPDF = function(paperId, type) {
@@ -107,13 +125,15 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                 .print-header p { font-size: 13.5px; margin: 2px 0; color: #111; }
                 .exam-meta { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 14.5px; font-weight: 600; margin-top: 6px; padding: 5px 0; border-top: 1px dashed #444; border-bottom: 1px dashed #444; text-align: left; }
                 .sec-banner { text-align: center; font-weight: bold; font-size: 16px; margin: 14px 0 8px 0; border: 1.5px solid #000; padding: 3px; background: #f1f5f9; page-break-inside: avoid; }
-                .sec-instruction, .auto-inst-bar { font-size: 14.5px; font-weight: bold; margin: 10px 0 6px 0; padding: 3px 0; border-bottom: 1px dotted #94a3b8; display: flex; justify-content: space-between; page-break-inside: avoid; break-after: avoid; }
+                .sec-instruction, .auto-inst-bar { font-size: 14.5px; font-weight: bold; margin: 10px 0 6px 0; padding: 3px 0; border-bottom: 1px dotted #94a3b8; display: flex; justify-content: space-between; gap: 8px; page-break-inside: avoid; break-after: avoid; }
                 .q-row-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 10px; page-break-inside: avoid !important; text-align: left !important; }
                 .q-cell-text { width: 89%; padding-right: 10px; vertical-align: top; font-size: 15px; word-wrap: break-word; overflow-wrap: break-word; text-align: left !important; line-height: 2.05; }
                 .q-cell-marks { width: 11%; vertical-align: top; text-align: right !important; font-weight: bold; font-size: 14.5px; white-space: nowrap; }
                 .p-ans-box { margin-top: 6px; padding: 8px 10px; background: #f8fafc; border-left: 3px solid #334155; font-size: 14.5px; page-break-inside: avoid !important; text-align: left !important; line-height: 2.1; }
                 .mcq-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 5px; text-align: left !important; }
                 .mcq-table td { width: 50%; padding: 4px 8px 4px 0; vertical-align: middle; font-size: 14.5px; line-height: 1.95; }
+                .gv-paper-img-wrap { margin: 7px 0; page-break-inside: avoid !important; }
+                .gv-paper-img-wrap img { max-width: 100%; height: auto; display: inline-block; border-radius: 3px; }
                 .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 65px; color: rgba(0, 0, 0, 0.05); z-index: 0; pointer-events: none; font-weight: bold; white-space: nowrap; }
             </style>
         </head>
@@ -126,7 +146,16 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                 </div>
             </div>
             <div class="paper-sheet" id="printableArea">${rawHTML}</div>
-            <script>window.onload = function() { setTimeout(function() { window.print(); }, 450); };<\/script>
+            <script>
+                window.onload = function() {
+                    var triggerPrint = function() { setTimeout(function() { window.print(); }, 450); };
+                    if (document.fonts && document.fonts.ready) {
+                        document.fonts.ready.then(triggerPrint).catch(triggerPrint);
+                    } else {
+                        triggerPrint();
+                    }
+                };
+            <\/script>
         </body>
         </html>
     `);
@@ -137,59 +166,111 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
 window.downloadWord = function(paperOrId, type) {
     const paper = resolvePaperObj(paperOrId);
     if (!paper) return;
+
     const rawHTML = window.generatePaperHTML(paper, type, true);
-    const fileName = `${paper.title || 'Paper'}_${type === 'solution' ? 'Answer_Key' : 'Question_Paper'}.doc`;
-    const wordHTML = `
+    const wordDoc = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset="utf-8"><title>${paper.title}</title>
+        <head>
+            <meta charset='utf-8'>
+            <title>${paper.title || 'Paper'}</title>
             <style>
-                @page { size: 21cm 29.7cm; margin: 1.5cm; }
-                body { font-family: 'Shruti', 'Mangal', 'Calibri', sans-serif; font-size: 11.5pt; line-height: 1.6; color: #000; text-align: left; }
-                .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-                .print-header h1 { font-size: 16pt; margin: 0; font-weight: bold; }
-                .exam-meta { border-top: 1px dashed #555; border-bottom: 1px dashed #555; padding: 5px 0; margin-bottom: 10px; font-weight: bold; }
-                .sec-banner { text-align: center; font-weight: bold; font-size: 12.5pt; margin: 12px 0 6px 0; border: 1px solid #000; padding: 3px; background: #f2f2f2; }
-                .sec-instruction, .auto-inst-bar { font-weight: bold; margin: 8px 0 4px 0; }
-                .gv-passage-box { border: 1px solid #333; padding: 8px; margin: 6px 0; background: #f9f9f9; }
+                body { font-family: 'Shruti', 'Noto Sans Gujarati', 'Mangal', Arial, sans-serif; font-size: 11.5pt; color: #000; line-height: 1.6; }
+                .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+                .print-header h1 { font-size: 16pt; margin: 0 0 3px 0; }
+                .exam-meta { font-weight: bold; border-top: 1px dashed #444; border-bottom: 1px dashed #444; padding: 5px 0; margin-bottom: 10px; }
+                .sec-banner { text-align: center; font-weight: bold; border: 1px solid #000; background: #f1f5f9; padding: 4px; margin: 12px 0 6px 0; }
+                .sec-instruction, .auto-inst-bar { font-weight: bold; margin: 8px 0 5px 0; border-bottom: 1px dotted #94a3b8; padding-bottom: 2px; }
+                .q-row-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+                .q-cell-text { width: 88%; vertical-align: top; }
+                .q-cell-marks { width: 12%; vertical-align: top; text-align: right; font-weight: bold; }
+                .mcq-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+                .mcq-table td { width: 50%; padding: 2px 6px 2px 0; }
+                .p-ans-box { margin-top: 4px; padding: 6px; background: #f8fafc; border-left: 3px solid #334155; }
                 .gv-data-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
                 .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 4px; text-align: center; }
-                table { width: 100%; border-collapse: collapse; text-align: left; }
-                .q-cell-text { width: 88%; vertical-align: top; padding-right: 8px; }
-                .q-cell-marks { width: 12%; vertical-align: top; text-align: right; font-weight: bold; }
-                .p-ans-box { margin-top: 4px; padding: 6px; background: #f5f5f5; border-left: 3px solid #333; }
-                .watermark { display: none; }
+                .gv-passage-box { border: 1px solid #333; padding: 8px; background: #f8fafc; margin: 6px 0; }
+                .gv-paper-img-wrap { margin: 6px 0; }
             </style>
-        </head><body>${rawHTML}</body></html>`;
-    const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' });
+        </head>
+        <body>${rawHTML}</body>
+        </html>`;
+
+    const blob = new Blob(['\ufeff', wordDoc], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url; link.download = fileName;
-    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${paper.title || 'Paper'}_${type === 'solution' ? 'Answer_Key' : 'Question_Paper'}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (typeof window.showToast === 'function') {
+        window.showToast('📝 Word ફાઈલ (.doc) ડાઉનલોડ થઈ ગઈ!');
+    }
 };
 
-window.groupSectionQuestionsByInstruction = function(items) {
+window.renderImageBlockForPDF = function(src, widthSetting, alignSetting, forWord = false) {
+    if (!src || !String(src).trim()) return '';
+    const wVal = widthSetting || '220px';
+    const alignVal = alignSetting || 'center';
+    const numericPx = wVal.endsWith('px') ? parseInt(wVal, 10) : (wVal === '100%' ? 460 : 220);
+    if (forWord) {
+        return `<div class="gv-paper-img-wrap" align="${alignVal}" style="text-align:${alignVal}; margin:6px 0;"><img src="${src}" width="${numericPx}" style="width:${wVal}; max-width:100%; height:auto;"></div>`;
+    }
+    return `<div class="gv-paper-img-wrap" style="text-align:${alignVal}; margin:7px 0;"><img src="${src}" style="width:${wVal}; max-width:100%; height:auto; border:1px solid #e2e8f0; padding:2px; background:#fff;"></div>`;
+};
+
+window.groupSectionQuestionsByInstruction = function(items, hasSecOption = false, secName = '') {
     const hasManualInst = items.some(q => q.type === 'instruction');
     if (hasManualInst) return items;
+
+    let orderedItems = items.slice();
+    if (secName === 'A' && typeof window.sortSectionAQuestions === 'function') {
+        orderedItems = window.sortSectionAQuestions(orderedItems);
+    }
+
     const groups = [];
     const map = new Map();
-    items.forEach(q => {
+    orderedItems.forEach(q => {
         const inst = window.getPDFQuestionInstruction(q);
-        if (!map.has(inst)) {
-            const grp = { instruction: inst, questions: [] };
-            map.set(inst, grp);
+        const typeKey = secName === 'A' ? `${String(q.type || '')}|||${inst}` : inst;
+        if (!map.has(typeKey)) {
+            const grp = { instruction: inst, type: q.type, questions: [] };
+            map.set(typeKey, grp);
             groups.push(grp);
         }
-        map.get(inst).questions.push(q);
+        map.get(typeKey).questions.push(q);
     });
     const result = [];
     groups.forEach(grp => {
         if (grp.instruction) {
             const grpMarks = grp.questions.reduce((sum, x) => sum + Number(x.marks || 0), 0);
-            result.push({ type: 'auto_instruction', text: grp.instruction, groupMarks: grpMarks });
+            result.push({ type: 'auto_instruction', text: grp.instruction, groupMarks: hasSecOption ? null : grpMarks });
         }
         grp.questions.forEach(q => result.push(q));
     });
     return result;
 };
+
+window.getSectionEffectiveMarksForPDF = function(secQuestions, secMeta) {
+    if (typeof window.calculateSectionEffectiveMarks === 'function') {
+        return window.calculateSectionEffectiveMarks(secQuestions, secMeta);
+    }
+    const realQs = (secQuestions || []).filter(q => q && q.type !== 'instruction' && q.type !== 'auto_instruction');
+    const attNum = secMeta && Number(secMeta.attemptCount) > 0 ? Number(secMeta.attemptCount) : 0;
+    if (attNum > 0 && attNum < realQs.length) {
+        return realQs.slice(0, attNum).reduce((s, q) => s + Number(q.marks || 0), 0);
+    }
+    return realQs.reduce((s, q) => s + Number(q.marks || 0), 0);
+};
+
+function renderInstructionRowHTML(leftText, rightText, className, forWord) {
+    if (forWord) {
+        return `<table style="width:100%; border-collapse:collapse; margin:8px 0 5px 0; border-bottom:1px dotted #94a3b8;"><tr><td style="font-weight:bold; text-align:left; padding:2px 0;">${leftText}</td><td style="font-weight:bold; text-align:right; padding:2px 0; white-space:nowrap;">${rightText}</td></tr></table>`;
+    }
+    return `<div class="${className}"><span>${leftText}</span><span>${rightText}</span></div>`;
+}
 
 window.generatePaperHTML = function(paper, type, forWord = false) {
     const schoolData = JSON.parse(localStorage.getItem('gyanVruksh_schoolProfile')) || { name: "જ્ઞાન વૃક્ષ વિદ્યાલય", address: "" };
@@ -199,6 +280,15 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
 
     const lang = window.detectPaperLanguage(paper);
     const L = window.GV_LANG_LABELS[lang] || window.GV_LANG_LABELS.gu;
+
+    const sData = { "None": [], A: [], B: [], C: [], D: [], E: [], F: [], G: [] };
+    (paper.questions || []).forEach(q => {
+        const secKey = (q.section && sData[q.section]) ? q.section : 'None';
+        sData[secKey].push(q);
+    });
+
+    const computedTotalMarks = order.reduce((sum, sec) => sum + window.getSectionEffectiveMarksForPDF(sData[sec], sMeta[sec]), 0);
+    const displayTotalMarks = computedTotalMarks > 0 ? computedTotalMarks : (paper.totalMarks || 0);
 
     let html = `<div class="print-header"><h1>${schoolData.name}</h1>`;
     if (schoolData.address) html += `<p>${schoolData.address}</p>`;
@@ -211,41 +301,57 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
     if (pdfSet.std && paper.standard) html += `<span>${L.std}: ${paper.standard}</span>`;
     if (pdfSet.subject && paper.subject) html += `<span> &nbsp;|&nbsp; ${L.sub}: ${paper.subject}</span>`;
     if (pdfSet.date && paper.date) html += `<span> &nbsp;|&nbsp; ${L.date}: ${window.formatDateDDMMYYYY(paper.date)}</span>`;
-    if (pdfSet.marks) html += `<span style="float:right;">${L.marks}: ${paper.totalMarks}</span>`;
+    if (pdfSet.marks) html += `<span style="float:right;">${L.marks}: ${displayTotalMarks}</span>`;
     html += `</div><div class="print-questions" style="margin-top:10px; text-align:left;">`;
-
-    const sData = { "None": [], A: [], B: [], C: [], D: [], E: [], F: [], G: [] };
-    (paper.questions || []).forEach(q => {
-        const secKey = (q.section && sData[q.section]) ? q.section : 'None';
-        sData[secKey].push(q);
-    });
 
     let gQNum = 1;
     order.forEach(sec => {
         if (sData[sec] && sData[sec].length > 0) {
-            if (sec !== "None") html += `<div class="sec-banner">${L.section} - ${sec}</div>`;
-            const secManualInst = (sMeta[sec] && sMeta[sec].instruction) ? sMeta[sec].instruction.trim() : '';
-            if (sMeta[sec] && (secManualInst || sMeta[sec].attempt)) {
-                html += `<div class="sec-instruction"><span>${secManualInst ? '• ' + secManualInst : ''}</span><span>${sMeta[sec].attempt ? '(' + sMeta[sec].attempt + ')' : ''}</span></div>`;
+            const realQs = sData[sec].filter(q => q.type !== 'instruction');
+            const metaObj = sMeta[sec] || {};
+            const secEffMarks = window.getSectionEffectiveMarksForPDF(sData[sec], metaObj);
+            const attNum = Number(metaObj.attemptCount) > 0 && Number(metaObj.attemptCount) < realQs.length ? Number(metaObj.attemptCount) : 0;
+            const secOptText = (metaObj.attempt && metaObj.attempt.trim())
+                ? metaObj.attempt.trim()
+                : (attNum > 0 ? `${L.anyOf} ${attNum}` : '');
+            const hasSecOption = !!(secOptText || attNum > 0);
+            const secManualInst = (metaObj.instruction && metaObj.instruction.trim()) ? metaObj.instruction.trim() : '';
+
+            if (sec !== 'None') {
+                html += `<div class="sec-banner">${L.section} - ${sec}${secOptText ? ` (${secOptText})` : ''} &nbsp;[${secEffMarks}]</div>`;
+            }
+            if (secManualInst) {
+                html += renderInstructionRowHTML(`• ${secManualInst}`, secOptText ? `(${secOptText})` : '', 'sec-instruction', forWord);
             }
 
-            const groupedItems = window.groupSectionQuestionsByInstruction(sData[sec]);
+            const groupedItems = window.groupSectionQuestionsByInstruction(sData[sec], hasSecOption, sec);
             let sQNum = 1;
             groupedItems.forEach(q => {
                 if (q.type === 'instruction') {
-                    html += `<div class="sec-instruction"><span>${q.text ? '• ' + q.text : ''}</span><span>${q.attempt ? '(' + q.attempt + ')' : ''}</span></div>`;
+                    html += renderInstructionRowHTML(q.text ? `• ${q.text}` : '', q.attempt ? `(${q.attempt})` : '', 'sec-instruction', forWord);
                 } else if (q.type === 'auto_instruction') {
                     if (q.text && q.text !== secManualInst) {
-                        html += `<div class="auto-inst-bar"><span>&#9656; ${q.text}</span><span>[${q.groupMarks}]</span></div>`;
+                        const marksBadge = (q.groupMarks !== null && q.groupMarks !== undefined) ? `[${q.groupMarks}]` : '';
+                        html += renderInstructionRowHTML(`&#9656; ${q.text}`, marksBadge, 'auto-inst-bar', forWord);
                     }
                 } else {
                     const qNum = (pdfSet.numbering === 'continuous' || sec === "None") ? gQNum : sQNum;
+                    const formattedQ = window.formatForPDF(q, lang, forWord);
                     html += `<table class="q-row-table"><tr>`;
-                    html += `<td class="q-cell-text"><strong>${qNum}.</strong> ${window.formatForPDF(q, lang)}`;
-                    if (q.image) html += `<br><img src="${q.image}" style="max-height:120px; max-width:95%; margin-top:5px;">`;
+                    html += `<td class="q-cell-text"><strong>${qNum}.</strong> ${formattedQ}`;
+                    if (q.image && !formattedQ.includes('gv-mcq-img-placed')) {
+                        html += window.renderImageBlockForPDF(q.image, q.imageWidth || '220px', q.imageAlign || 'center', forWord);
+                    }
                     if (type === 'solution') {
-                        html += `<div class="p-ans-box"><strong>${L.ans}:</strong><br><div style="margin-left:8px;">${window.formatAns(q.answer)}</div>`;
-                        if (q.solutionImage) html += `<img src="${q.solutionImage}" style="max-height:140px; max-width:95%; margin-top:5px; display:block;">`;
+                        const hasAnsText = q.answer && String(q.answer).trim() !== '';
+                        const hasSolImg = q.solutionImage && String(q.solutionImage).trim() !== '';
+                        html += `<div class="p-ans-box"><strong>${L.ans}:</strong>`;
+                        if (hasAnsText) {
+                            html += `<br><div style="margin-left:8px;">${window.formatAns(q.answer)}</div>`;
+                        }
+                        if (hasSolImg) {
+                            html += window.renderImageBlockForPDF(q.solutionImage, q.solutionImageWidth || '240px', q.solutionImageAlign || 'left', forWord);
+                        }
                         html += `</div>`;
                     }
                     html += `</td><td class="q-cell-marks">[${q.marks}]</td></tr></table>`;
@@ -257,16 +363,18 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
     return html + `</div>`;
 };
 
-// જૂના કોડ સાથે ૧૦૦% સુસંગતતા માટે Alias
 window.generatePaperHTMLStr = window.generatePaperHTML;
 
-window.formatForPDF = function(q, paperLang = 'gu') {
+window.formatForPDF = function(q, paperLang = 'gu', forWord = false) {
     const fmt = window.formatScienceAndMath || ((x) => x);
     let t = fmt(q.text || '');
     if (q.type === 'MCQ') {
         const parts = t.split(/\(A\)|\(B\)|\(C\)|\(D\)/);
         if (parts.length === 5) {
-            return `${parts[0].trim()}<table class="mcq-table"><tr><td>(A) ${parts[1].trim()}</td><td>(B) ${parts[2].trim()}</td></tr><tr><td>(C) ${parts[3].trim()}</td><td>(D) ${parts[4].trim()}</td></tr></table>`;
+            const imgMid = q.image
+                ? `<div class="gv-mcq-img-placed">${window.renderImageBlockForPDF(q.image, q.imageWidth || '220px', q.imageAlign || 'center', forWord)}</div>`
+                : '';
+            return `${parts[0].trim()}${imgMid}<table class="mcq-table"><tr><td>(A) ${parts[1].trim()}</td><td>(B) ${parts[2].trim()}</td></tr><tr><td>(C) ${parts[3].trim()}</td><td>(D) ${parts[4].trim()}</td></tr></table>`;
         }
     }
     if ((q.type === 'જોડકા જોડો' || String(q.type || '').toLowerCase().includes('match')) && window.parseMatchTextGlobal) {
