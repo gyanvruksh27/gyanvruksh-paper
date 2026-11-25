@@ -412,54 +412,6 @@
             .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
             .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
     }
-            let code = `__htmltag_${idxToLetters(htmlTags.length)}__`;
-            htmlTags.push({ code: code, tag: tag });
-            return code;
-        });
-
-        s = s.replace(/\\+ce\{([^}]+)\}/g, '$1');
-        s = s.replace(/\$([^$]+)\$/g, '$1');
-        s = s.replace(/\\+overline\{([^}]+)\}/g, '<span style="text-decoration:overline;">$1</span>');
-        s = s.replace(/\\+rightarrow|->/g, ' → ');
-        s = s.replace(/\\+leftarrow|<-/g, ' ← ');
-        s = s.replace(/\\+Delta/g, 'Δ');
-        s = s.replace(/\\+pi/g, 'π');
-        s = s.replace(/\\+theta/g, 'θ');
-        s = s.replace(/\\+angle/g, '∠');
-        s = s.replace(/\\+times/g, '×');
-        s = s.replace(/\\+div/g, '÷');
-        s = s.replace(/\\+pm/g, '±');
-        s = s.replace(/\\+neq/g, '≠');
-        s = s.replace(/\\+cdot/g, '·');
-
-        s = s.replace(/\\+frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
-        s = s.replace(/\(((?:[^()]|\([^()]*\))+)\)\s*\/\s*\(((?:[^()]|\([^()]*\))+)\)/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
-        s = s.replace(/([0-9a-zA-Z]+)\s*\/\s*\(((?:[^()]|\([^()]*\))+)\)/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
-        s = s.replace(/\(((?:[^()]|\([^()]*\))+)\)\s*\/\s*([0-9a-zA-Z]+)/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
-
-        s = s.replace(/\\+sqrt\{([^}]+)\}/g, '<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">$1</span></span>');
-        s = s.replace(/√\(([^)]+)\)/g, '<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">$1</span></span>');
-        s = s.replace(/√([0-9a-zA-Z]+)/g, '<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">$1</span></span>');
-
-        s = s.replace(/\^\(\s*([0-9a-zA-Z]+)\s*\/\s*([0-9a-zA-Z]+)\s*\)/g, '<sup><span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span></sup>');
-        s = s.replace(/\^([0-9a-zA-Z]+)\/([0-9a-zA-Z]+)/g, '<sup><span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span></sup>');
-        s = s.replace(/\^\{\s*([0-9a-zA-Z]+)\s*\/\s*([0-9a-zA-Z]+)\s*\}/g, '<sup><span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span></sup>');
-        s = s.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
-        s = s.replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>');
-        s = s.replace(/\^([+\-]?[0-9a-zA-Z]+)/g, '<sup>$1</sup>');
-
-        s = s.replace(/(^|[\s(=+\-,:])(\d+|[a-zA-Z])\s*\/\s*(\d+|[a-zA-Z])(?=$|[\s)=+\-,.;:])/g, '$1<span class="m-frac"><span class="m-num">$2</span><span class="m-den">$3</span></span>');
-
-        s = s.replace(/_\{([^}]+)\}/g, '<sub>$1</sub>');
-        s = s.replace(/_([0-9]+)/g, '<sub>$1</sub>');
-        s = s.replace(/([A-Za-z\)])(\d+)([+\-])/g, '$1<sub>$2</sub><sup>$3</sup>');
-        s = s.replace(/([A-Z][a-z]?|\))(\d+)/g, '$1<sub>$2</sub>');
-
-        for (let i = 0; i < htmlTags.length; i++) {
-            s = s.split(htmlTags[i].code).join(htmlTags[i].tag);
-        }
-        return s;
-    };
 
     // ==========================================
     // 💾 4. GLOBAL STATE, NOTIFICATIONS & EFFECTIVE MARKS CALCULATORS
