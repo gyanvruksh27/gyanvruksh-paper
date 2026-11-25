@@ -1,4 +1,4 @@
-// js/pdf-generator.js — Gyan Vruksh 3.0 (Clean JS + Crisp Question & Solution Images + Section-A Board Order + Word Alignment Fix)
+// js/pdf-generator.js — Gyan Vruksh 3.2 (Full-Width Print-Safe Statistics/Probability Tables + Crisp Images + Section-A Board Order)
 
 window.GV_LANG_LABELS = {
     gu: { std: 'ધોરણ', sub: 'વિષય', date: 'તારીખ', marks: 'કુલ ગુણ', section: 'વિભાગ', ans: 'ઉત્તર', colA: 'વિભાગ A', colB: 'વિભાગ B', solTitle: '(Answer Key)', anyOf: 'કોઈ પણ' },
@@ -107,10 +107,16 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                 sup { font-size: 0.8em; vertical-align: super; line-height: 0; font-weight: 600; }
                 sub { font-size: 0.8em; vertical-align: sub; line-height: 0; font-weight: 600; }
                 .gv-passage-box { background: #f8fafc; border: 1.2px solid #333; border-left: 3.5px solid #000; padding: 8px 12px; margin: 6px 0 8px 0; font-weight: 400; line-height: 1.75; page-break-inside: avoid; }
-                .gv-table-scroll { width: 100%; overflow-x: auto; margin: 6px 0; page-break-inside: avoid; }
-                .gv-data-table { width: 100%; max-width: 100%; border-collapse: collapse; margin: 0; font-size: 12.5px; line-height: 1.45; page-break-inside: avoid; background: #fff; }
-                .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; word-break: break-word; }
-                .gv-data-table th { background: #f1f5f9; font-weight: bold; }
+                .gv-table-scroll { display: block; width: 100%; max-width: 100%; overflow-x: auto; margin: 6px 0; page-break-inside: avoid; }
+                .gv-data-table { width: 100% !important; max-width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; margin: 0 !important; font-size: 12.5px; line-height: 1.35 !important; page-break-inside: avoid; background: #fff !important; }
+                .gv-data-table tr { page-break-inside: avoid !important; }
+                .gv-data-table th, .gv-data-table td { border: 1px solid #000 !important; padding: 4px 5px !important; text-align: center !important; vertical-align: middle !important; line-height: 1.35 !important; word-break: keep-all !important; overflow-wrap: normal !important; white-space: normal !important; }
+                .gv-data-table th { background: #f1f5f9 !important; font-weight: bold !important; color: #000 !important; }
+                .gv-data-table.gv-tbl-horiz th:first-child { text-align: left !important; min-width: 72px; max-width: 125px; padding: 3px 5px !important; font-size: 11px !important; }
+                .gv-data-table.gv-tbl-compact { font-size: 11px !important; }
+                .gv-data-table.gv-tbl-compact th, .gv-data-table.gv-tbl-compact td { padding: 3px 3px !important; }
+                .gv-data-table.gv-tbl-ultra { font-size: 10px !important; }
+                .gv-data-table.gv-tbl-ultra th, .gv-data-table.gv-tbl-ultra td { padding: 2px 2px !important; }
                 .gv-data-table .m-frac { font-size: 0.88em; padding: 1px 2px; margin: 1px; line-height: 1.15; }
                 .top-action-bar { position: sticky; top: 0; left: 0; width: 100%; background: #1e293b; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif; }
                 .action-btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; }
@@ -130,9 +136,12 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                 .sec-banner { text-align: center; font-weight: bold; font-size: 16px; margin: 14px 0 8px 0; border: 1.5px solid #000; padding: 3px; background: #f1f5f9; page-break-inside: avoid; }
                 .sec-instruction, .auto-inst-bar { font-size: 14.5px; font-weight: bold; margin: 10px 0 6px 0; padding: 3px 0; border-bottom: 1px dotted #94a3b8; display: flex; justify-content: space-between; gap: 8px; page-break-inside: avoid; break-after: avoid; }
                 .q-row-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 10px; page-break-inside: avoid !important; text-align: left !important; }
+                .q-row-table.has-data-table { page-break-inside: auto !important; }
                 .q-cell-text { width: 89%; padding-right: 10px; vertical-align: top; font-size: 15px; word-wrap: break-word; overflow-wrap: break-word; text-align: left !important; line-height: 2.05; }
+                .q-cell-full { width: 100%; padding: 2px 0 4px 18px; vertical-align: top; font-size: 15px; word-wrap: break-word; text-align: left !important; line-height: 1.95; }
                 .q-cell-marks { width: 11%; vertical-align: top; text-align: right !important; font-weight: bold; font-size: 14.5px; white-space: nowrap; }
                 .p-ans-box { margin-top: 6px; padding: 8px 10px; background: #f8fafc; border-left: 3px solid #334155; font-size: 14.5px; page-break-inside: avoid !important; text-align: left !important; line-height: 2.1; }
+                .p-ans-box.has-data-table { page-break-inside: auto !important; }
                 .mcq-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 5px; text-align: left !important; }
                 .mcq-table td { width: 50%; padding: 4px 8px 4px 0; vertical-align: middle; font-size: 14.5px; line-height: 1.95; }
                 .gv-paper-img-wrap { margin: 7px 0; page-break-inside: avoid !important; }
@@ -185,6 +194,7 @@ window.downloadWord = function(paperOrId, type) {
                 .sec-instruction, .auto-inst-bar { font-weight: bold; margin: 8px 0 5px 0; border-bottom: 1px dotted #94a3b8; padding-bottom: 2px; }
                 .q-row-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
                 .q-cell-text { width: 88%; vertical-align: top; }
+                .q-cell-full { width: 100%; padding: 2px 0 4px 14px; vertical-align: top; }
                 .q-cell-marks { width: 12%; vertical-align: top; text-align: right; font-weight: bold; }
                 .mcq-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
                 .mcq-table td { width: 50%; padding: 2px 6px 2px 0; }
@@ -193,6 +203,9 @@ window.downloadWord = function(paperOrId, type) {
                 .gv-data-table { width: 100%; border-collapse: collapse; margin: 0; font-size: 10pt; }
                 .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; }
                 .gv-data-table th { background: #f1f5f9; font-weight: bold; }
+                .gv-data-table.gv-tbl-compact { font-size: 9pt; }
+                .gv-data-table.gv-tbl-ultra { font-size: 8.5pt; }
+                .gv-data-table.gv-tbl-ultra th, .gv-data-table.gv-tbl-ultra td { padding: 2px 2px; }
                 .gv-passage-box { border: 1px solid #333; padding: 8px; background: #f8fafc; margin: 6px 0; }
                 .gv-paper-img-wrap { margin: 6px 0; }
             </style>
@@ -342,24 +355,50 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
                 } else {
                     const qNum = (pdfSet.numbering === 'continuous' || sec === "None") ? gQNum : sQNum;
                     const formattedQ = window.formatForPDF(q, lang, forWord);
-                    html += `<table class="q-row-table"><tr>`;
-                    html += `<td class="q-cell-text"><strong>${qNum}.</strong> ${formattedQ}`;
-                    if (q.image && !formattedQ.includes('gv-mcq-img-placed')) {
-                        html += window.renderImageBlockForPDF(q.image, q.imageWidth || '220px', q.imageAlign || 'center', forWord);
-                    }
+                    const tblSplitIdx = formattedQ.indexOf('<div class="gv-table-scroll">');
+                    const hasQTable = tblSplitIdx !== -1;
+                    const qImgHTML = (q.image && !formattedQ.includes('gv-mcq-img-placed'))
+                        ? window.renderImageBlockForPDF(q.image, q.imageWidth || '220px', q.imageAlign || 'center', forWord)
+                        : '';
+
+                    let ansBoxHTML = '';
+                    let hasAnsTable = false;
                     if (type === 'solution') {
                         const hasAnsText = q.answer && String(q.answer).trim() !== '';
                         const hasSolImg = q.solutionImage && String(q.solutionImage).trim() !== '';
-                        html += `<div class="p-ans-box"><strong>${L.ans}:</strong>`;
+                        const formattedAnsBody = hasAnsText ? window.formatAns(q.answer) : '';
+                        hasAnsTable = formattedAnsBody.includes('gv-data-table');
+                        ansBoxHTML = `<div class="p-ans-box${hasAnsTable ? ' has-data-table' : ''}"><strong>${L.ans}:</strong>`;
                         if (hasAnsText) {
-                            html += `<br><div style="margin-left:8px;">${window.formatAns(q.answer)}</div>`;
+                            ansBoxHTML += `<br><div style="margin-left:8px;">${formattedAnsBody}</div>`;
                         }
                         if (hasSolImg) {
-                            html += window.renderImageBlockForPDF(q.solutionImage, q.solutionImageWidth || '240px', q.solutionImageAlign || 'left', forWord);
+                            ansBoxHTML += window.renderImageBlockForPDF(q.solutionImage, q.solutionImageWidth || '240px', q.solutionImageAlign || 'left', forWord);
                         }
-                        html += `</div>`;
+                        ansBoxHTML += `</div>`;
                     }
-                    html += `</td><td class="q-cell-marks">[${q.marks}]</td></tr></table>`;
+
+                    const hasAnyTable = hasQTable || hasAnsTable;
+                    html += `<table class="q-row-table${hasAnyTable ? ' has-data-table' : ''}">`;
+
+                    if (hasQTable) {
+                        const beforeTbl = formattedQ.slice(0, tblSplitIdx).trim();
+                        const fromTbl = formattedQ.slice(tblSplitIdx).trim();
+                        if (beforeTbl) {
+                            html += `<tr><td class="q-cell-text"><strong>${qNum}.</strong> ${beforeTbl}</td><td class="q-cell-marks">[${q.marks}]</td></tr>`;
+                            html += `<tr><td colspan="2" class="q-cell-full">${fromTbl}${qImgHTML}</td></tr>`;
+                        } else {
+                            html += `<tr><td class="q-cell-text"><strong>${qNum}.</strong> ${formattedQ}${qImgHTML}</td><td class="q-cell-marks">[${q.marks}]</td></tr>`;
+                        }
+                    } else {
+                        html += `<tr><td class="q-cell-text"><strong>${qNum}.</strong> ${formattedQ}${qImgHTML}${(!hasAnyTable && ansBoxHTML) ? ansBoxHTML : ''}</td><td class="q-cell-marks">[${q.marks}]</td></tr>`;
+                    }
+
+                    if (hasAnyTable && ansBoxHTML) {
+                        html += `<tr><td colspan="2" class="q-cell-full">${ansBoxHTML}</td></tr>`;
+                    }
+
+                    html += `</table>`;
                     gQNum++; sQNum++;
                 }
             });
@@ -403,7 +442,7 @@ window.formatAns = function(ans) {
         return lines.map(l => {
             const tr = l.trim();
             if (!tr) return '';
-            if (/^<div class="gv-table-scroll">|^<table\b/i.test(tr)) {
+            if (tr.includes('<div class="gv-table-scroll">') || /^<table\b/i.test(tr)) {
                 return `<div style="margin:6px 0;">${tr}</div>`;
             }
             return `<div style="margin-bottom:5px;">&#8226; ${tr}</div>`;
