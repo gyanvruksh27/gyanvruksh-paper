@@ -1,0 +1,10 @@
+[
+{
+"id": "std10_maths",
+"standard": "10",
+"subject": "ગણિત",
+"title": "ધોરણ 10 — ગણિત (પ્રકરણ 1 થી 14)",
+"file": "data/std10_maths.json",
+"autoLoad": true
+}
+]
