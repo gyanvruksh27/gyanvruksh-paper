@@ -1,4 +1,4 @@
-// js/question-bank.js — Gyan Vruksh 3.1 (GitHub Multi-Subject data/catalog.json + Online Library + Filtered Subject Export + All Features)
+// js/question-bank.js — Gyan Vruksh 3.2 (Smart Responsive & Print-Ready Data Tables + GitHub Multi-Subject Library + All Features)
 
 (function() {
     // ==========================================
@@ -256,7 +256,9 @@
             .gv-preview-sheet .sec-banner { text-align: center; font-weight: bold; font-size: 15.5px; margin: 14px 0 8px 0; border: 1.5px solid #000; padding: 3px; background: #f1f5f9; }
             .gv-preview-sheet .sec-instruction, .gv-preview-sheet .auto-inst-bar { font-size: 14px; font-weight: bold; margin: 10px 0 6px 0; padding: 3px 0; border-bottom: 1px dotted #94a3b8; display: flex; justify-content: space-between; gap: 8px; }
             .gv-preview-sheet .q-row-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 10px; }
+            .gv-preview-sheet .q-row-table.has-data-table { page-break-inside: auto; }
             .gv-preview-sheet .q-cell-text { width: 89%; padding-right: 10px; vertical-align: top; font-size: 14.5px; word-wrap: break-word; line-height: 1.95; }
+            .gv-preview-sheet .q-cell-full { width: 100%; padding: 2px 0 4px 18px; vertical-align: top; font-size: 14.5px; line-height: 1.9; }
             .gv-preview-sheet .q-cell-marks { width: 11%; vertical-align: top; text-align: right; font-weight: bold; font-size: 14px; white-space: nowrap; }
             .gv-preview-sheet .p-ans-box { margin-top: 6px; padding: 8px 10px; background: #f8fafc; border-left: 3px solid #334155; font-size: 14px; line-height: 1.95; }
             .gv-preview-sheet .mcq-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 4px; }
@@ -278,11 +280,18 @@
 
             /* Passage & Statistics Tables */
             .gv-passage-box { background: #f8fafc; border: 1.5px solid #94a3b8; border-left: 4px solid #334155; border-radius: 6px; padding: 10px 14px; margin: 6px 0 10px 0; font-weight: 400; line-height: 1.85; color: #1e293b; }
-            .gv-table-scroll { width: 100%; overflow-x: auto; margin: 8px 0; }
-            .gv-data-table { width: 100%; border-collapse: collapse; margin: 0; font-size: 13px; line-height: 1.45; background: #fff; }
-            .gv-data-table th, .gv-data-table td { border: 1px solid #475569; padding: 4px 6px; text-align: center; vertical-align: middle; word-break: break-word; }
-            .gv-data-table th { background: #f1f5f9; font-weight: 700; color: #0f172a; }
-            .gv-data-table .m-frac { font-size: 0.9em; padding: 1px 2px; margin: 1px; line-height: 1.2; }
+            .gv-table-scroll { display: block; width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+            .gv-data-table { width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; margin: 0 !important; font-size: 13px; line-height: 1.4 !important; background: #fff !important; }
+            .gv-data-table th, .gv-data-table td { border: 1px solid #475569 !important; padding: 5px 6px !important; text-align: center !important; vertical-align: middle !important; line-height: 1.35 !important; word-break: keep-all !important; overflow-wrap: normal !important; white-space: nowrap; }
+            .gv-data-table th { background: #f1f5f9 !important; font-weight: 700 !important; color: #0f172a !important; white-space: normal !important; }
+            .gv-data-table.gv-tbl-horiz th:first-child { text-align: left !important; min-width: 82px; max-width: 150px; white-space: normal !important; padding: 4px 6px !important; }
+            .gv-data-table.gv-tbl-compact { font-size: 11.5px; }
+            .gv-data-table.gv-tbl-compact th, .gv-data-table.gv-tbl-compact td { padding: 4px 4px !important; }
+            .gv-data-table.gv-tbl-ultra { font-size: 10.5px; }
+            .gv-data-table.gv-tbl-ultra th, .gv-data-table.gv-tbl-ultra td { padding: 3px 3px !important; }
+            .gv-data-table .m-frac { font-size: 0.9em; padding: 1px 2px; margin: 1px; line-height: 1.15; }
+            .gv-preview-sheet .gv-data-table th, .gv-preview-sheet .gv-data-table td { border-color: #000 !important; }
+            .gv-preview-sheet .gv-data-table.gv-tbl-horiz td { white-space: normal !important; }
             .gv-dash-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
             .gv-dash-table th, .gv-dash-table td { border-bottom: 1px solid #e2e8f0; padding: 9px 10px; text-align: left; }
             .gv-dash-table th { background: #f8fafc; color: #475569; font-weight: 700; }
@@ -305,6 +314,51 @@
     // ==========================================
     // 🚀 3. 2D MATH, SCIENCE, PASSAGE & TABLE PARSER
     // ==========================================
+    window.enhanceDataTables = function(rawStr) {
+        if (!rawStr) return '';
+        let s = String(rawStr);
+
+        // જો ક્યારેક HTML ટેબલ ટેગ્સ એસ્કેપ (&lt;table&gt;) થઈ ગયા હોય તો તેને ફરી સાચા ટેગમાં ફેરવવા
+        s = s.replace(/&lt;(\/?(?:table|thead|tbody|tfoot|tr|th|td)\b[^&]*)&gt;/gi, '<$1>');
+
+        // દરેક <table> ને સ્વચ્છ બનાવી તેની કોલમ સંખ્યા મુજબ સ્માર્ટ ક્લાસ (compact / ultra / horiz) આપવો
+        s = s.replace(/<table\b[^>]*>[\s\S]*?<\/table\s*>/gi, function(tbl) {
+            let cleanTbl = tbl
+                .replace(/\\n|\r?\n/g, '')
+                .replace(/>(?:\s|<br\s*\/?>)+<(?=\/?(?:table|thead|tbody|tfoot|tr|th|td)\b)/gi, '><');
+
+            const rowMatches = cleanTbl.match(/<tr\b[\s\S]*?<\/tr\s*>/gi) || [];
+            const trCount = rowMatches.length;
+            let maxCols = 0;
+            rowMatches.forEach(r => {
+                const cells = r.match(/<t[hd]\b/gi) || [];
+                if (cells.length > maxCols) maxCols = cells.length;
+            });
+
+            const classes = ['gv-data-table'];
+            if (maxCols >= 10) classes.push('gv-tbl-ultra');
+            else if (maxCols >= 7) classes.push('gv-tbl-compact');
+            if (trCount === 2 && maxCols >= 6) classes.push('gv-tbl-horiz');
+
+            const classStr = classes.join(' ');
+            if (/^<table\b[^>]*class=/i.test(cleanTbl)) {
+                cleanTbl = cleanTbl.replace(/^(<table\b[^>]*class=["'])([^"']*)(["'])/i, function(_, p1, existingCls, p3) {
+                    if (existingCls.includes('gv-data-table')) return p1 + existingCls + p3;
+                    return p1 + existingCls + ' ' + classStr + p3;
+                });
+            } else {
+                cleanTbl = cleanTbl.replace(/^<table\b/i, `<table class="${classStr}"`);
+            }
+
+            return `<div class="gv-table-scroll">${cleanTbl}</div>`;
+        });
+
+        // ડબલ રેપર ન બને તેની ખાતરી કરવી
+        s = s.replace(/<div class="gv-table-scroll">\s*<div class="gv-table-scroll">/gi, '<div class="gv-table-scroll">');
+        s = s.replace(/<\/table>\s*<\/div>\s*<\/div>/gi, '</table></div>');
+        return s;
+    };
+
     window.formatScienceAndMath = function(text) {
         if (!text) return '';
         let s = String(text);
@@ -313,13 +367,10 @@
         s = s.replace(/@@@@+/g, '');
         s = s.replace(/\[PASSAGE\]([\s\S]*?)\[\/PASSAGE\]/gi, '<div class="gv-passage-box">$1</div>');
 
-        // કોષ્ટક (<table>) ની અંદર કોઈ નવી લાઈન (\n) હોય તો તેને દૂર કરી સિંગલ લાઈન રાખવી જેથી ટેબલ તૂટે નહીં
-        s = s.replace(/<table\b[\s\S]*?<\/table>/gi, function(tbl) {
-            return tbl.replace(/\\n|\r?\n/g, '');
-        });
+        // કોષ્ટક (<table>) ને પ્રથમ સ્વચ્છ અને રિસ્પોન્સિવ બનાવવા
+        s = window.enhanceDataTables(s);
 
         let htmlTags = [];
-        let tableWrapStack = [];
         const idxToLetters = (n) => {
             let res = '';
             do {
@@ -331,20 +382,8 @@
 
         // સુરક્ષિત યુનિકોડ પ્લેસહોલ્ડર (\uE000...\uE001) જેથી _0, _5 જેવા આંકડા <td> કે <th> ને બગાડે નહીં
         s = s.replace(/<\/?[a-zA-Z][^>]*>/g, function(match) {
-            let tag = match;
-            if (/^<table\b/i.test(tag)) {
-                if (!/class=/i.test(tag)) {
-                    tag = '<div class="gv-table-scroll">' + tag.replace(/^<table/i, '<table class="gv-data-table"');
-                    tableWrapStack.push(true);
-                } else {
-                    tableWrapStack.push(false);
-                }
-            } else if (/^<\/table\s*>/i.test(tag)) {
-                const shouldClose = tableWrapStack.pop();
-                if (shouldClose) tag = '</table></div>';
-            }
             let code = `\uE000${idxToLetters(htmlTags.length)}\uE001`;
-            htmlTags.push({ code: code, tag: tag });
+            htmlTags.push({ code: code, tag: match });
             return code;
         });
 
@@ -409,8 +448,8 @@
     function formatDisplayBlock(rawText) {
         return window.formatScienceAndMath(rawText || '')
             .replace(/\\n|\n/g, '<br>')
-            .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
-            .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
+            .replace(/(?:<br>\s*)+(<div class="gv-table-scroll">)/g, '$1')
+            .replace(/(<\/table><\/div>)(?:\s*<br>)+/g, '$1');
     }
 
     // ==========================================
