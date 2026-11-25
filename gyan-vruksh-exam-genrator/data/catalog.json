@@ -3,8 +3,16 @@
 "id": "std10_maths",
 "standard": "10",
 "subject": "ગણિત",
-"title": "ધોરણ 10 — ગણિત (પ્રકરણ 1 થી 14)",
+"title": "ધોરણ 10 — ગણિત",
 "file": "data/std10_maths.json",
 "autoLoad": true
 }
+{
+"id": "std10_sci",
+"standard": "10",
+"subject": "વિજ્ઞાન",
+"title": "ધોરણ 10 — વિજ્ઞાન",
+"file": "data/std10_sci.json",
+"autoLoad": true
+} 
 ]
