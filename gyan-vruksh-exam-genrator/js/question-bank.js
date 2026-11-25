@@ -1,4 +1,4 @@
-// js/question-bank.js — Gyan Vruksh 3.0 (Fixed updateInstructionDetail Error + Full Image Support + Section-A Board Order & Mixer)
+// js/question-bank.js — Gyan Vruksh 3.1 (GitHub Multi-Subject data/catalog.json + Online Library + Filtered Subject Export + All Features)
 
 (function() {
     // ==========================================
@@ -13,7 +13,7 @@
         'એક વાક્યમાં જવાબ આપો': 'નીચેના પ્રશ્નોના એક વાક્યમાં ઉત્તર લખો.',
         'એક શબ્દમાં ઉત્તર': 'નીચેના પ્રશ્નોના એક શબ્દમાં ઉત્તર લખો.',
         'વ્યાખ્યા આપો': 'નીચે આપેલા પદોની વ્યાખ્યા આપો.',
-        'સૂત્ર / એકમ લખો': 'નીચે આપેલાના રાસાયણિક સૂત્ર અથવા SI એકમ લખો.',
+        'સૂત્ર / એકમ લખો': 'નીચે આપેલાના સૂત્ર અથવા વ્યાખ્યા લખો.',
         'પૂરું નામ લખો': 'નીચે આપેલા સંક્ષિપ્ત નામોના પૂરા નામ લખો.',
         'અસંગત પદ શોધો': 'નીચે આપેલામાંથી અસંગત પદ શોધીને લખો.',
         'સંબંધ પૂર્ણ કરો': 'પ્રથમ જોડીનો સંબંધ સમજી બીજી જોડી પૂર્ણ કરો.',
@@ -51,6 +51,8 @@
         'Do as directed',
         'Identify the function'
     ];
+
+    window.onlineCatalog = [];
 
     function getAllQuestions() {
         try { return JSON.parse(localStorage.getItem('gyanVruksh_questions')) || []; } catch (e) { return []; }
@@ -149,7 +151,6 @@
         });
     };
 
-    // ✅ FIX: Instruction Datalist & all legacy/alias function names defined right at top
     window.updateInstructionDatalist = function() {
         const dl = document.getElementById('gvInstructionSuggestions');
         if (!dl) return;
@@ -501,8 +502,60 @@
     };
 
     // ==========================================
-    // 📥 5. JSON IMPORT, PASTE, BACKUP, CLEAR & ONLINE SYNC
+    // 📥 5. JSON IMPORT, PASTE, FILTERED BACKUP, CLEAR & GITHUB MODULAR LIBRARY SYNC
     // ==========================================
+    function normalizeQuestionItem(item, idx) {
+        return {
+            id: item.id || ('Q_IMP_' + Date.now() + '_' + idx),
+            standard: String(item.standard || '10'),
+            subject: String(item.subject || 'વિજ્ઞાન'),
+            chapter: String(item.chapter || '1'),
+            type: String(item.type || 'MCQ'),
+            marks: Number(item.marks) || 1,
+            lang: item.lang || 'gu',
+            instruction: item.instruction || '',
+            text: item.text || '',
+            answer: item.answer || '',
+            image: item.image || '',
+            imageWidth: item.imageWidth || '220px',
+            imageAlign: item.imageAlign || 'center',
+            solutionImage: item.solutionImage || '',
+            solutionImageWidth: item.solutionImageWidth || '240px',
+            solutionImageAlign: item.solutionImageAlign || 'left'
+        };
+    }
+
+    window.mergeQuestionsArray = function(parsed, replaceAll = false) {
+        if (!Array.isArray(parsed)) return { added: 0, updated: 0, ok: false };
+        const existing = replaceAll ? [] : getAllQuestions();
+        const idIndexMap = new Map();
+        existing.forEach((q, i) => { if (q && q.id) idIndexMap.set(q.id, i); });
+
+        let added = 0, updated = 0;
+        parsed.forEach((item, idx) => {
+            if (!item || (!item.text && !item.image)) return;
+            const norm = normalizeQuestionItem(item, idx);
+            if (idIndexMap.has(norm.id)) {
+                const pos = idIndexMap.get(norm.id);
+                existing[pos] = { ...existing[pos], ...norm };
+                updated++;
+            } else {
+                idIndexMap.set(norm.id, existing.length);
+                existing.push(norm);
+                added++;
+            }
+        });
+
+        try {
+            saveAllQuestions(existing);
+            window.pmChaptersInitializedKey = '';
+            return { added, updated, ok: true };
+        } catch (storageErr) {
+            window.showToast('⚠️ સ્ટોરેજ મર્યાદા પૂર્ણ થઈ છે! "ઓનલાઈન લાઈબ્રેરી" માંથી "🔄 ફક્ત આ વિષય લોડ કરો" વિકલ્પ વાપરો.', 'error');
+            return { added: 0, updated: 0, ok: false };
+        }
+    };
+
     window.parseAndMergeQuestionsJSON = function(rawText) {
         if (!rawText || !String(rawText).trim()) {
             return window.showToast('JSON ડેટા ખાલી છે!', 'error');
@@ -524,52 +577,9 @@
             else return window.showToast('JSON ડેટા Array ([...]) સ્વરૂપમાં હોવો જોઈએ!', 'error');
         }
 
-        const existing = getAllQuestions();
-        const existingIds = new Set(existing.map(q => q.id));
-        let added = 0, updated = 0;
-
-        parsed.forEach((item, idx) => {
-            if (!item || (!item.text && !item.image)) return;
-            const norm = {
-                id: item.id || ('Q_IMP_' + Date.now() + '_' + idx),
-                standard: String(item.standard || '10'),
-                subject: String(item.subject || 'વિજ્ઞાન'),
-                chapter: String(item.chapter || '1'),
-                type: String(item.type || 'MCQ'),
-                marks: Number(item.marks) || 1,
-                lang: item.lang || 'gu',
-                instruction: item.instruction || '',
-                text: item.text || '',
-                answer: item.answer || '',
-                image: item.image || '',
-                imageWidth: item.imageWidth || '220px',
-                imageAlign: item.imageAlign || 'center',
-                solutionImage: item.solutionImage || '',
-                solutionImageWidth: item.solutionImageWidth || '240px',
-                solutionImageAlign: item.solutionImageAlign || 'left'
-            };
-
-            if (existingIds.has(norm.id)) {
-                const pos = existing.findIndex(x => x.id === norm.id);
-                if (pos !== -1) {
-                    existing[pos] = { ...existing[pos], ...norm };
-                    updated++;
-                }
-            } else {
-                existing.push(norm);
-                existingIds.add(norm.id);
-                added++;
-            }
-        });
-
-        try {
-            saveAllQuestions(existing);
-        } catch (storageErr) {
-            return window.showToast('⚠️ સ્ટોરેજ મર્યાદા પૂર્ણ થઈ છે! જૂનો બેકઅપ લઈ કેટલાક પ્રશ્નો ઓછા કરો.', 'error');
-        }
-
-        window.pmChaptersInitializedKey = '';
-        window.showToast(`✅ સફળતાપૂર્વક ${added} નવા પ્રશ્નો ઉમેરાયા અને ${updated} અપડેટ થયા!`);
+        const res = window.mergeQuestionsArray(parsed, false);
+        if (!res.ok) return;
+        window.showToast(`✅ સફળતાપૂર્વક ${res.added} નવા પ્રશ્નો ઉમેરાયા અને ${res.updated} અપડેટ થયા!`);
         window.refreshData();
     };
 
@@ -627,19 +637,47 @@
         };
     };
 
-    window.exportQuestionBank = function() {
+    function getCleanSubjectSlug(subName) {
+        const s = String(subName || '').trim().toLowerCase();
+        if (s.includes('ગણિત') || s.includes('math')) return 'maths';
+        if (s.includes('વિજ્ઞાન') || s.includes('sci')) return 'science';
+        if (s.includes('સામાજિક') || s.includes('social')) return 'ss';
+        if (s.includes('ગુજરાતી') || s.includes('guj')) return 'gujarati';
+        if (s.includes('અંગ્રેજી') || s.includes('eng')) return 'english';
+        if (s.includes('હિન્દી') || s.includes('hin')) return 'hindi';
+        if (s.includes('સંસ્કૃત') || s.includes('sans')) return 'sanskrit';
+        return s.replace(/[^a-z0-9]+/g, '_') || 'subject';
+    }
+
+    window.exportQuestionBank = function(onlyFiltered = false) {
         const allQ = getAllQuestions();
-        if (allQ.length === 0) return window.showToast('બેકઅપ લેવા માટે કોઈ પ્રશ્ન ઉપલબ્ધ નથી!', 'error');
-        const blob = new Blob([JSON.stringify(allQ, null, 2)], { type: 'application/json' });
+        let dataToExport = allQ;
+        let fileName = `gyanvruksh_questions_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+        if (onlyFiltered) {
+            dataToExport = allQ.filter(q => {
+                const okStd = window.currentStdFilter === 'ALL' || String(q.standard) === window.currentStdFilter;
+                const okSub = window.currentSubFilter === 'ALL' || String(q.subject) === window.currentSubFilter;
+                const okChap = window.currentChapFilter === 'ALL' || String(q.chapter) === window.currentChapFilter;
+                return okStd && okSub && okChap;
+            });
+            const stdPart = window.currentStdFilter !== 'ALL' ? `std${window.currentStdFilter}` : 'allstd';
+            const subPart = window.currentSubFilter !== 'ALL' ? getCleanSubjectSlug(window.currentSubFilter) : 'allsub';
+            const chapPart = window.currentChapFilter !== 'ALL' ? `_ch${window.currentChapFilter}` : '';
+            fileName = `${stdPart}_${subPart}${chapPart}.json`;
+        }
+
+        if (dataToExport.length === 0) return window.showToast('બેકઅપ લેવા માટે કોઈ પ્રશ્ન ઉપલબ્ધ નથી!', 'error');
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `gyanvruksh_questions_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        window.showToast(`💾 ${allQ.length} પ્રશ્નોનો JSON બેકઅપ ડાઉનલોડ થઈ ગયો!`);
+        window.showToast(`💾 ${dataToExport.length} પ્રશ્નોની ફાઈલ (${fileName}) ડાઉનલોડ થઈ ગઈ!`);
     };
 
     window.clearQuestionBank = function() {
@@ -651,31 +689,162 @@
         });
     };
 
-    window.syncOnlineQuestions = async function() {
+    // ☁️ GitHub data/catalog.json & Legacy questions.json Auto-Sync
+    window.fetchOnlineCatalog = async function() {
         try {
-            const res = await fetch('./questions.json?v=' + Date.now(), { cache: 'no-store' });
-            if (!res.ok) return;
-            const onlineData = await res.json();
-            if (!Array.isArray(onlineData) || onlineData.length === 0) return;
-
-            const local = getAllQuestions();
-            const localIds = new Set(local.map(q => q.id));
-            let added = 0;
-            onlineData.forEach(item => {
-                if (item && item.id && !localIds.has(item.id)) {
-                    local.push(item);
-                    localIds.add(item.id);
-                    added++;
-                }
-            });
-            if (added > 0) {
-                saveAllQuestions(local);
-                window.pmChaptersInitializedKey = '';
-                window.refreshData();
-                window.showToast(`☁️ ઓનલાઈન સર્વરમાંથી ${added} નવા પ્રશ્નો સિંક થઈ ગયા!`);
+            const res = await fetch('./data/catalog.json?v=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) return [];
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                window.onlineCatalog = data;
+                return data;
             }
         } catch (err) {
-            // ઓફલાઈન હોય અથવા questions.json ન હોય તો શાંતિથી અવગણવું
+            // ઓફલાઈન અથવા catalog.json ન હોય તો શાંતિથી અવગણવું
+        }
+        return window.onlineCatalog || [];
+    };
+
+    window.loadOnlineSubjectPack = async function(packId, replaceAll = false, silent = false) {
+        const pack = (window.onlineCatalog || []).find(p => p.id === packId);
+        if (!pack || !pack.file) {
+            if (!silent) window.showToast('આ વિષયની ફાઈલ કેટલોગમાં મળી નથી.', 'error');
+            return 0;
+        }
+        try {
+            if (!silent) window.showToast(`⏳ ${pack.title || pack.subject} ડાઉનલોડ થઈ રહ્યું છે...`);
+            const fileUrl = pack.file.startsWith('http') || pack.file.startsWith('./') ? pack.file : ('./' + pack.file);
+            const res = await fetch(fileUrl + '?v=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) {
+                if (!silent) window.showToast(`❌ ફાઈલ મળી નથી: ${pack.file} (GitHub માં અપલોડ થયું છે કે નહીં તે ચકાસો)`, 'error');
+                return 0;
+            }
+            const json = await res.json();
+            const arr = Array.isArray(json) ? json : (json && Array.isArray(json.questions) ? json.questions : []);
+            const result = window.mergeQuestionsArray(arr, replaceAll);
+            if (!result.ok) return 0;
+
+            if (!silent) {
+                window.showToast(`☁️ ${pack.title || pack.subject}: ${result.added} નવા ઉમેરાયા, ${result.updated} અપડેટ થયા!`);
+                window.refreshData();
+                const libOverlay = document.getElementById('gvOnlineLibModal');
+                if (libOverlay) window.openOnlineLibraryModal();
+            }
+            return result.added;
+        } catch (err) {
+            if (!silent) window.showToast('❌ ઓનલાઈન ફાઈલ લોડ કરવામાં ભૂલ આવી: ' + err.message, 'error');
+            return 0;
+        }
+    };
+
+    window.openOnlineLibraryModal = async function() {
+        const old = document.getElementById('gvOnlineLibModal');
+        if (old) old.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'gvOnlineLibModal';
+        overlay.className = 'gv-modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+            <div class="gv-modal-box" style="max-width:740px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:12px;">
+                    <h3 style="margin:0; color:#1e3a8a;">☁️ ઓનલાઈન વિષય લાઈબ્રેરી (GitHub data/ ફોલ્ડર)</h3>
+                    <button type="button" id="olCloseBtn" style="border:none; background:#fee2e2; color:#b91c1c; font-weight:bold; padding:4px 10px; border-radius:6px; cursor:pointer;">✖</button>
+                </div>
+                <div id="olContentBox" style="text-align:center; padding:20px; color:#475569;">⏳ GitHub પરથી વિષયોની યાદી લોડ થઈ રહી છે...</div>
+                <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+                    <button type="button" id="olCancelBtn" class="gv-btn gv-btn-dark">બંધ કરો</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        const close = () => overlay.remove();
+        overlay.querySelector('#olCloseBtn').onclick = close;
+        overlay.querySelector('#olCancelBtn').onclick = close;
+
+        const catalog = await window.fetchOnlineCatalog();
+        const contentBox = overlay.querySelector('#olContentBox');
+        if (!catalog || catalog.length === 0) {
+            contentBox.innerHTML = `
+                <div style="background:#fefce8; border:1px solid #fde047; padding:14px; border-radius:8px; text-align:left; font-size:13.5px; color:#854d0e; line-height:1.7;">
+                    <strong>📌 હજુ સુધી GitHub માં <code>data/catalog.json</code> અપલોડ થયેલ નથી.</strong><br>
+                    1. GitHub માં <code>data/std10_maths.json</code> અને <code>data/catalog.json</code> અપલોડ કરો.<br>
+                    2. ત્યારબાદ અહીં બધા જ ધોરણ અને વિષયોના પેક ૧ ક્લિકમાં ડાઉનલોડ કરવા માટે દેખાશે!
+                </div>`;
+            return;
+        }
+
+        const localQs = getAllQuestions();
+        contentBox.style.textAlign = 'left';
+        contentBox.style.padding = '0';
+        contentBox.innerHTML = `
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:9px 12px; border-radius:8px; font-size:12.5px; color:#1e40af; margin-bottom:10px;">
+                💡 <strong>ઉમેરો/અપડેટ:</strong> હાલના પ્રશ્નો સાથે નવો વિષય ઉમેરશે. &nbsp;|&nbsp; <strong>ફક્ત આ વિષય લોડ કરો:</strong> મેમરી બચાવવા જૂના વિષય હટાવી માત્ર આ વિષય લોડ કરશે.
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                ${catalog.map(pack => {
+                    const localCount = localQs.filter(q => String(q.standard) === String(pack.standard) && String(q.subject) === String(pack.subject)).length;
+                    return `
+                        <div style="border:1px solid #cbd5e1; border-left:4px solid ${localCount > 0 ? '#16a34a' : '#2563eb'}; border-radius:8px; padding:10px 12px; background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div>
+                                <div style="font-weight:700; font-size:14.5px; color:#0f172a;">📘 ${escapeAttr(pack.title || (`ધોરણ ${pack.standard} — ${pack.subject}`))}</div>
+                                <div style="font-size:12px; color:#64748b; margin-top:2px;">
+                                    ફાઈલ: <code>${escapeAttr(pack.file)}</code> &nbsp;|&nbsp;
+                                    હાલમાં ફોનમાં: <strong style="color:${localCount > 0 ? '#15803d' : '#dc2626'};">${localCount} પ્રશ્નો</strong>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="gv-btn gv-btn-blue" style="padding:5px 10px; font-size:12px;" onclick="window.loadOnlineSubjectPack('${escapeJsArg(pack.id)}', false, false)">⬇️ ઉમેરો / અપડેટ</button>
+                                <button type="button" class="gv-btn gv-btn-teal" style="padding:5px 10px; font-size:12px;" onclick="window.loadOnlineSubjectPack('${escapeJsArg(pack.id)}', true, false)">🔄 ફક્ત આ વિષય લોડ કરો</button>
+                            </div>
+                        </div>`;
+                }).join('')}
+            </div>`;
+    };
+
+    window.syncOnlineQuestions = async function() {
+        let totalAdded = 0;
+
+        // 1. નવી મલ્ટી-સબ્જેક્ટ સિસ્ટમ: data/catalog.json માંથી autoLoad: true હોય તેવા વિષયો સિંક કરો
+        const catalog = await window.fetchOnlineCatalog();
+        if (Array.isArray(catalog) && catalog.length > 0) {
+            for (const pack of catalog) {
+                if (pack && pack.autoLoad === true && pack.file) {
+                    const added = await window.loadOnlineSubjectPack(pack.id, false, true);
+                    totalAdded += added;
+                }
+            }
+        }
+
+        // 2. જૂની સિસ્ટમ (Backward Compatible): જો રૂટ ફોલ્ડરમાં questions.json હોય તો તે પણ સિંક કરો
+        try {
+            const res = await fetch('./questions.json?v=' + Date.now(), { cache: 'no-store' });
+            if (res.ok) {
+                const onlineData = await res.json();
+                if (Array.isArray(onlineData) && onlineData.length > 0) {
+                    const local = getAllQuestions();
+                    const localIds = new Set(local.map(q => q.id));
+                    let legacyAdded = 0;
+                    onlineData.forEach(item => {
+                        if (item && item.id && !localIds.has(item.id)) {
+                            local.push(item);
+                            localIds.add(item.id);
+                            legacyAdded++;
+                        }
+                    });
+                    if (legacyAdded > 0) {
+                        saveAllQuestions(local);
+                        totalAdded += legacyAdded;
+                    }
+                }
+            }
+        } catch (err) {
+            // શાંતિથી અવગણવું
+        }
+
+        if (totalAdded > 0) {
+            window.pmChaptersInitializedKey = '';
+            window.refreshData();
+            window.showToast(`☁️ GitHub સર્વરમાંથી ${totalAdded} નવા પ્રશ્નો સિંક થઈ ગયા!`);
         }
     };
 
@@ -1328,7 +1497,7 @@
         const sortedA = window.sortSectionAQuestions(secA);
         const secOrder = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, None: 8 };
         window.draftPaperQuestions = [...sortedA, ...others].sort((a, b) => (secOrder[a.section || 'None'] || 9) - (secOrder[b.section || 'None'] || 9));
-        window.showToast('✅ વિભાગ-A બોર્ડના ક્રમમાં (MCQ ➔ ખાલી જગ્યા ➔ ખરા-ખોટા ➔ જોડકા ➔ એક વાક્ય ➔ અન્ય) ગોઠવાઈ ગયો!');
+        window.showToast('✅ વિભાગ-A બોર્ડના ક્રમમાં ગોઠવાઈ ગયો!');
         window.renderPaperMaker();
     };
 
@@ -1695,7 +1864,7 @@
             }
             overlay.querySelector('#mxNewType').value = '';
             overlay.querySelector('#mxNewInst').value = '';
-            window.showToast(`✅ નવો પેટા-પ્રકાર "${nt}" સેવ થઈ ગયો! હવે તમે પ્રશ્ન બેંકમાં આ પ્રકારના પ્રશ્નો ઉમેરી શકો છો.`);
+            window.showToast(`✅ નવો પેટા-પ્રકાર "${nt}" સેવ થઈ ગયો!`);
             renderRows();
         };
 
@@ -1996,6 +2165,7 @@
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button type="button" class="gv-btn gv-btn-blue" onclick="window.switchTab('maker')">📝 નવું પેપર બનાવો</button>
+                        <button type="button" class="gv-btn gv-btn-orange" onclick="window.openOnlineLibraryModal()">☁️ ઓનલાઈન લાઈબ્રેરી</button>
                         <button type="button" class="gv-btn gv-btn-green" onclick="window.openAddModal(event)">➕ નવો પ્રશ્ન</button>
                         <button type="button" class="gv-btn gv-btn-purple" onclick="window.openPasteJSONModal(event)">📋 JSON પેસ્ટ</button>
                         <button type="button" class="gv-btn gv-btn-teal" onclick="window.triggerImport(event)">📥 JSON ફાઈલ</button>
@@ -2039,14 +2209,14 @@
                         </table>
                     </div>` : `
                     <div style="text-align:center; padding:24px; color:#64748b;">
-                        પ્રશ્ન બેંક હજુ ખાલી છે. ઉપરના <strong>📋 JSON પેસ્ટ</strong> અથવા <strong>📥 JSON ફાઈલ</strong> બટનથી પ્રશ્નો ઉમેરો.
+                        પ્રશ્ન બેંક હજુ ખાલી છે. ઉપરના <strong>☁️ ઓનલાઈન લાઈબ્રેરી</strong>, <strong>📋 JSON પેસ્ટ</strong> અથવા <strong>📥 JSON ફાઈલ</strong> બટનથી પ્રશ્નો ઉમેરો.
                     </div>`}
             </div>
         `;
     };
 
     // ==========================================
-    // 📚 10. QUESTION BANK RENDERER (DYNAMIC FILTERS + DRAFT QUICK ADD)
+    // 📚 10. QUESTION BANK RENDERER (DYNAMIC FILTERS + FILTERED EXPORT + ONLINE LIBRARY)
     // ==========================================
     window.renderQuestions = function() {
         const container = document.getElementById('questionListContainer');
@@ -2079,18 +2249,21 @@
         });
 
         const draftIdSet = new Set(window.draftPaperQuestions.map(x => x.id));
+        const hasSubFilter = window.currentStdFilter !== 'ALL' || window.currentSubFilter !== 'ALL' || window.currentChapFilter !== 'ALL';
 
         container.innerHTML = `
             <div class="gv-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
                     <h3 style="margin:0; color:#1e3a8a;">📚 પ્રશ્ન બેંક (${filteredQ.length} / ${allQ.length} પ્રશ્નો)</h3>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button type="button" class="gv-btn gv-btn-orange" onclick="window.openOnlineLibraryModal()">☁️ ઓનલાઈન લાઈબ્રેરી</button>
                         <button type="button" class="gv-btn gv-btn-green" onclick="window.openAddModal(event)">➕ નવો પ્રશ્ન</button>
                         <button type="button" class="gv-btn gv-btn-purple" onclick="window.openPasteJSONModal(event)">📋 JSON પેસ્ટ</button>
                         <button type="button" class="gv-btn gv-btn-blue" onclick="window.triggerImport(event)">📥 JSON ફાઈલ</button>
-                        <button type="button" class="gv-btn gv-btn-teal" onclick="window.exportQuestionBank()">💾 બેકઅપ</button>
+                        ${hasSubFilter ? `<button type="button" class="gv-btn gv-btn-teal" onclick="window.exportQuestionBank(true)" title="માત્ર ફિલ્ટર કરેલા ધોરણ-વિષયની ફાઈલ ડાઉનલોડ કરો">💾 આ વિષયનો બેકઅપ</button>` : ''}
+                        <button type="button" class="gv-btn gv-btn-dark" onclick="window.exportQuestionBank(false)">💾 ફૂલ બેકઅપ</button>
                         <button type="button" class="gv-btn gv-btn-outline" id="btnToggleAnsMode">${window.hideAnswersMode ? '👁️ જવાબ બતાવો' : '🙈 જવાબ છુપાવો'}</button>
-                        <button type="button" class="gv-btn gv-btn-red" onclick="window.clearQuestionBank()">🗑️ બધું ખાલી કરો</button>
+                        <button type="button" class="gv-btn gv-btn-red" onclick="window.clearQuestionBank()">🗑️ ખાલી કરો</button>
                     </div>
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px;">
@@ -2190,7 +2363,7 @@
     };
 
     // ==========================================
-    // 📝 11. PAPER MAKER RENDERER (MULTI-CHAPTER + AUTO + BOARD + CUSTOM BLUEPRINT + MANUAL + OPTIONS + PREVIEW)
+    // 📝 11. PAPER MAKER RENDERER
     // ==========================================
     window.renderPaperMaker = function() {
         const box = document.getElementById('gvPaperMakerContainer');
