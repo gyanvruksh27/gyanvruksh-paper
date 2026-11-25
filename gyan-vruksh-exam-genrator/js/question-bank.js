@@ -278,9 +278,11 @@
 
             /* Passage & Statistics Tables */
             .gv-passage-box { background: #f8fafc; border: 1.5px solid #94a3b8; border-left: 4px solid #334155; border-radius: 6px; padding: 10px 14px; margin: 6px 0 10px 0; font-weight: 400; line-height: 1.85; color: #1e293b; }
-            .gv-data-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.94em; }
-            .gv-data-table th, .gv-data-table td { border: 1px solid #475569; padding: 5px 8px; text-align: center; }
-            .gv-data-table th { background: #f1f5f9; font-weight: 700; }
+            .gv-table-scroll { width: 100%; overflow-x: auto; margin: 8px 0; }
+            .gv-data-table { width: 100%; border-collapse: collapse; margin: 0; font-size: 13px; line-height: 1.45; background: #fff; }
+            .gv-data-table th, .gv-data-table td { border: 1px solid #475569; padding: 4px 6px; text-align: center; vertical-align: middle; word-break: break-word; }
+            .gv-data-table th { background: #f1f5f9; font-weight: 700; color: #0f172a; }
+            .gv-data-table .m-frac { font-size: 0.9em; padding: 1px 2px; margin: 1px; line-height: 1.2; }
             .gv-dash-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
             .gv-dash-table th, .gv-dash-table td { border-bottom: 1px solid #e2e8f0; padding: 9px 10px; text-align: left; }
             .gv-dash-table th { background: #f8fafc; color: #475569; font-weight: 700; }
@@ -311,7 +313,13 @@
         s = s.replace(/@@@@+/g, '');
         s = s.replace(/\[PASSAGE\]([\s\S]*?)\[\/PASSAGE\]/gi, '<div class="gv-passage-box">$1</div>');
 
+        // કોષ્ટક (<table>) ની અંદર કોઈ નવી લાઈન (\n) હોય તો તેને દૂર કરી સિંગલ લાઈન રાખવી જેથી ટેબલ તૂટે નહીં
+        s = s.replace(/<table\b[\s\S]*?<\/table>/gi, function(tbl) {
+            return tbl.replace(/\\n|\r?\n/g, '');
+        });
+
         let htmlTags = [];
+        let tableWrapStack = [];
         const idxToLetters = (n) => {
             let res = '';
             do {
@@ -321,11 +329,89 @@
             return res;
         };
 
+        // સુરક્ષિત યુનિકોડ પ્લેસહોલ્ડર (\uE000...\uE001) જેથી _0, _5 જેવા આંકડા <td> કે <th> ને બગાડે નહીં
         s = s.replace(/<\/?[a-zA-Z][^>]*>/g, function(match) {
             let tag = match;
-            if (/^<table\b/i.test(tag) && !/class=/i.test(tag)) {
-                tag = tag.replace(/^<table/i, '<table class="gv-data-table"');
+            if (/^<table\b/i.test(tag)) {
+                if (!/class=/i.test(tag)) {
+                    tag = '<div class="gv-table-scroll">' + tag.replace(/^<table/i, '<table class="gv-data-table"');
+                    tableWrapStack.push(true);
+                } else {
+                    tableWrapStack.push(false);
+                }
+            } else if (/^<\/table\s*>/i.test(tag)) {
+                const shouldClose = tableWrapStack.pop();
+                if (shouldClose) tag = '</table></div>';
             }
+            let code = `\uE000${idxToLetters(htmlTags.length)}\uE001`;
+            htmlTags.push({ code: code, tag: tag });
+            return code;
+        });
+
+        s = s.replace(/\\+ce\{([^}]+)\}/g, '$1');
+        s = s.replace(/\$([^$]+)\$/g, '$1');
+        s = s.replace(/\\+overline\{([^}]+)\}/g, '<span style="text-decoration:overline;">$1</span>');
+        s = s.replace(/\\+rightarrow|->/g, ' → ');
+        s = s.replace(/\\+leftarrow|<-/g, ' ← ');
+        s = s.replace(/\\+Delta/g, 'Δ');
+        s = s.replace(/\\+pi/g, 'π');
+        s = s.replace(/\\+theta/g, 'θ');
+        s = s.replace(/\\+angle/g, '∠');
+        s = s.replace(/\\+times/g, '×');
+        s = s.replace(/\\+div/g, '÷');
+        s = s.replace(/\\+pm/g, '±');
+        s = s.replace(/\\+neq/g, '≠');
+        s = s.replace(/\\+cdot/g, '·');
+
+        s = s.replace(/\\+frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
+        s = s.replace(/\(((?:[^()]|\([^()]*\))+)\)\s*\/\s*\(((?:[^()]|\([^()]*\))+)\)/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
+        s = s.replace(/([0-9a-zA-Z]+)\s*\/\s*\(((?:[^()]|\([^()]*\))+)\)/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
+        s = s.replace(/\(((?:[^()]|\([^()]*\))+)\)\s*\/\s*([0-9a-zA-Z]+)/g, '<span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span>');
+
+        s = s.replace(/\\+sqrt\{([^}]+)\}/g, '<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">$1</span></span>');
+        s = s.replace(/√\(([^)]+)\)/g, '<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">$1</span></span>');
+        s = s.replace(/√([0-9a-zA-Z]+)/g, '<span class="m-sqrt"><span class="m-sqrt-sym">√</span><span class="m-sqrt-body">$1</span></span>');
+
+        s = s.replace(/\^\(\s*([0-9a-zA-Z]+)\s*\/\s*([0-9a-zA-Z]+)\s*\)/g, '<sup><span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span></sup>');
+        s = s.replace(/\^([0-9a-zA-Z]+)\/([0-9a-zA-Z]+)/g, '<sup><span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span></sup>');
+        s = s.replace(/\^\{\s*([0-9a-zA-Z]+)\s*\/\s*([0-9a-zA-Z]+)\s*\}/g, '<sup><span class="m-frac"><span class="m-num">$1</span><span class="m-den">$2</span></span></sup>');
+        s = s.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
+        s = s.replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>');
+        s = s.replace(/\^([+\-]?[0-9a-zA-Z]+)/g, '<sup>$1</sup>');
+
+        s = s.replace(/(^|[\s(=+\-,:\uE001])(\d+|[a-zA-Z])\s*\/\s*(\d+|[a-zA-Z])(?=$|[\s)=+\-,.;:\uE000])/g, '$1<span class="m-frac"><span class="m-num">$2</span><span class="m-den">$3</span></span>');
+
+        s = s.replace(/_\{([^}]+)\}/g, '<sub>$1</sub>');
+        s = s.replace(/_([0-9]+)/g, '<sub>$1</sub>');
+        s = s.replace(/([A-Za-z\)])(\d+)([+\-])/g, '$1<sub>$2</sub><sup>$3</sup>');
+        s = s.replace(/([A-Z][a-z]?|\))(\d+)/g, '$1<sub>$2</sub>');
+
+        for (let i = 0; i < htmlTags.length; i++) {
+            s = s.split(htmlTags[i].code).join(htmlTags[i].tag);
+        }
+        return s;
+    };
+
+    // ડ્રાફ્ટ લિસ્ટ માટે સુરક્ષિત પ્રિવ્યૂ સ્નિપેટ (જેથી કોષ્ટક કે HTML ટેગ અધવચ્ચે કપાઈને પેજ ન બગાડે)
+    window.getSafeDraftSnippet = function(rawText) {
+        if (!rawText) return '';
+        const hasTable = /<table\b/i.test(rawText);
+        const clean = String(rawText)
+            .replace(/<table\b[\s\S]*?<\/table>/gi, ' ')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\\n|\r?\n/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const shortText = clean.length > 105 ? (clean.substring(0, 105) + '...') : clean;
+        return window.formatScienceAndMath(shortText) + (hasTable ? ' <span style="background:#e0f2fe; color:#0369a1; font-size:11px; padding:1px 6px; border-radius:4px; font-weight:700;">📊 કોષ્ટક</span>' : '');
+    };
+
+    function formatDisplayBlock(rawText) {
+        return window.formatScienceAndMath(rawText || '')
+            .replace(/\\n|\n/g, '<br>')
+            .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
+            .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
+    }
             let code = `__htmltag_${idxToLetters(htmlTags.length)}__`;
             htmlTags.push({ code: code, tag: tag });
             return code;
@@ -2304,9 +2390,9 @@
             card.className = 'gv-card';
             const inDraft = draftIdSet.has(q.id);
             const effInst = window.getEffectiveInstruction(q);
-            let qText = window.formatScienceAndMath(q.text || '').replace(/\\n|\n/g, '<br>');
+            let qText = formatDisplayBlock(q.text || '');
             if (q.type === 'MCQ') qText = qText.replace(/\(A\)/g, '<br>(A)').replace(/\(C\)/g, '&nbsp;&nbsp;&nbsp;&nbsp;(C)');
-            let ansHTML = window.formatScienceAndMath(q.answer || '').replace(/\\n|\n/g, '<br>');
+            let ansHTML = formatDisplayBlock(q.answer || '');
 
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
@@ -2497,7 +2583,7 @@
             const draftIdSet = new Set(window.draftPaperQuestions.map(x => x.id));
             const manualRows = manualFiltered.slice(0, window.pmManualLimit).map(q => {
                 const isAdded = draftIdSet.has(q.id);
-                let qText = window.formatScienceAndMath(q.text || '').replace(/\\n|\n/g, '<br>');
+                let qText = formatDisplayBlock(q.text || '');
                 if (q.type === 'MCQ') qText = qText.replace(/\(A\)/g, '<br>(A)').replace(/\(C\)/g, '&nbsp;&nbsp;&nbsp;&nbsp;(C)');
                 return `
                     <div style="display:flex; gap:10px; align-items:flex-start; padding:10px; border-bottom:1px solid #e2e8f0; background:${isAdded ? '#f0fdf4' : '#fff'};">
@@ -2662,7 +2748,7 @@
                         <strong>${idx + 1}.</strong>
                         <span style="color:#1d4ed8; font-size:11.5px; font-weight:700;">[પ્ર.${escapeAttr(q.chapter || '-')}]</span>
                         <span style="color:#6d28d9; font-size:11.5px; font-weight:700;">[${escapeAttr(q.type || '-')}]</span>
-                        ${window.formatScienceAndMath(q.text || '').substring(0, 110)}${(q.text || '').length > 110 ? '...' : ''}
+                        ${window.getSafeDraftSnippet(q.text || '')}
                         <span style="color:#15803d; font-weight:bold;">[${q.marks} ગુણ]</span>
                         ${q.image ? '<span style="background:#dbeafe; color:#1e40af; font-size:11px; padding:1px 5px; border-radius:4px; margin-left:3px;">🖼️ પ્રશ્ન</span>' : ''}
                         ${q.solutionImage ? '<span style="background:#dcfce7; color:#166534; font-size:11px; padding:1px 5px; border-radius:4px; margin-left:3px;">🖼️ ઉત્તર</span>' : ''}
