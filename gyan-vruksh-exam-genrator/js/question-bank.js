@@ -1,7 +1,22 @@
-// js/question-bank.js — Gyan Vruksh 3.3 (Complete Full App + DOM-Isolated Smart Table Engine + Online Library + Visual Table Builder)
+// js/question-bank.js — Gyan Vruksh 3.3 (Clean Error-Free JS + DOM-Isolated Smart Table Engine + Online Library + Visual Table Builder)
 
 (function () {
     'use strict';
+
+    // Global Safety Error Banner (so screen never stays silently blank if anything ever breaks)
+    window.addEventListener('error', function (ev) {
+        if (!ev || !ev.message) return;
+        let errBar = document.getElementById('gvRuntimeErrBar');
+        if (!errBar && document.body) {
+            errBar = document.createElement('div');
+            errBar.id = 'gvRuntimeErrBar';
+            errBar.style.cssText = 'position:fixed; bottom:10px; left:10px; right:10px; background:#fef2f2; color:#991b1b; border:2px solid #dc2626; padding:10px 14px; border-radius:8px; font-size:13px; z-index:9999999; font-family:sans-serif;';
+            document.body.appendChild(errBar);
+        }
+        if (errBar) {
+            errBar.innerHTML = '<strong>⚠️ ટેકનિકલ ભૂલ:</strong> ' + String(ev.message) + ' <button onclick="this.parentNode.remove()" style="float:right; background:#dc2626; color:#fff; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">✖</button>';
+        }
+    });
 
     // ==========================================
     // 1. CONSTANTS, STORAGE KEYS & DEFAULTS
@@ -56,7 +71,6 @@
 
     const ALL_SECTIONS = ['None', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
-    // App State
     let appState = {
         activeTab: 'dashboard',
         questions: [],
@@ -171,7 +185,7 @@
         }
         const t = document.createElement('div');
         const bg = type === 'error' ? '#dc2626' : (type === 'info' ? '#2563eb' : '#16a34a');
-        t.style.cssText = `background:${bg}; color:#fff; padding:10px 16px; border-radius:8px; font-size:13.5px; font-weight:600; box-shadow:0 6px 18px rgba(0,0,0,0.22); transition:opacity 0.3s; line-height:1.5;`;
+        t.style.cssText = 'background:' + bg + '; color:#fff; padding:10px 16px; border-radius:8px; font-size:13.5px; font-weight:600; box-shadow:0 6px 18px rgba(0,0,0,0.22); transition:opacity 0.3s; line-height:1.5;';
         t.textContent = msg;
         holder.appendChild(t);
         setTimeout(() => {
@@ -331,7 +345,7 @@
 
         const htmlTags = [];
         s = s.replace(/<\/?[a-zA-Z][^>]*>/g, function (match) {
-            const code = `\uE000${idxToLetters(htmlTags.length)}\uE001`;
+            const code = '\uE000' + idxToLetters(htmlTags.length) + '\uE001';
             htmlTags.push({ code: code, tag: match });
             return code;
         });
@@ -395,7 +409,7 @@
                 let html = '<table>';
                 rows.forEach((r, ri) => {
                     const cells = r.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
-                    html += '<tr>' + cells.map((c, ci) => (ri === 0 || ci === 0) ? `<th>${c}</th>` : `<td>${c}</td>`).join('') + '</tr>';
+                    html += '<tr>' + cells.map((c, ci) => (ri === 0 || ci === 0) ? ('<th>' + c + '</th>') : ('<td>' + c + '</td>')).join('') + '</tr>';
                 });
                 return html + '</table>';
             });
@@ -408,7 +422,7 @@
                 dataLines.forEach((line, ri) => {
                     const cells = line.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
                     const tag = ri === 0 ? 'th' : 'td';
-                    html += '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+                    html += '<tr>' + cells.map(c => '<' + tag + '>' + c + '</' + tag + '>').join('') + '</tr>';
                 });
                 return prefix + html + '</table>';
             });
@@ -462,7 +476,7 @@
                 tbl.setAttribute('border', '1');
                 tbl.setAttribute('cellspacing', '0');
                 tbl.setAttribute('cellpadding', '4');
-                tbl.setAttribute('style', `width:100%; border-collapse:collapse; margin:0; background:#ffffff; border:1.5px solid #334155; font-size:${fontSize}; line-height:1.35;`);
+                tbl.setAttribute('style', 'width:100%; border-collapse:collapse; margin:0; background:#ffffff; border:1.5px solid #334155; font-size:' + fontSize + '; line-height:1.35;');
 
                 rows.forEach((tr) => {
                     Array.from(tr.children).forEach((cell, cIdx) => {
@@ -472,14 +486,14 @@
                         const isTh = cell.tagName === 'TH';
                         const align = (isWideHoriz && isTh && cIdx === 0) ? 'left' : 'center';
                         const bg = isTh ? 'background:#f1f5f9; font-weight:700;' : 'background:#ffffff;';
-                        cell.setAttribute('style', `border:1px solid #475569; padding:${cellPad}; text-align:${align}; vertical-align:middle; ${bg} color:#0f172a;`);
+                        cell.setAttribute('style', 'border:1px solid #475569; padding:' + cellPad + '; text-align:' + align + '; vertical-align:middle; ' + bg + ' color:#0f172a;');
                     });
                 });
 
                 const singleLineTable = tbl.outerHTML.replace(/\r?\n/g, '');
-                return `<div class="gv-table-scroll" style="display:block; width:100%; max-width:100%; overflow-x:auto; margin:8px 0;">${singleLineTable}</div>`;
+                return '<div class="gv-table-scroll" style="display:block; width:100%; max-width:100%; overflow-x:auto; margin:8px 0;">' + singleLineTable + '</div>';
             } catch (e) {
-                return `<div class="gv-table-scroll">${rawTableHtml}</div>`;
+                return '<div class="gv-table-scroll">' + rawTableHtml + '</div>';
             }
         },
 
@@ -508,10 +522,9 @@
                     for (let i = 0; i < maxLen; i++) {
                         const c0 = r0[i] ? r0[i].innerHTML : '';
                         const c1 = r1[i] ? r1[i].innerHTML : '';
-                        const isHead = (i === 0);
-                        const tag = isHead ? 'th' : 'td';
-                        const bg = isHead ? 'background:#f1f5f9; font-weight:700;' : 'background:#ffffff;';
-                        newHtml += `<tr><${tag} style="border:1px solid #000; padding:4px 12px; text-align:center; ${bg}">${c0}</${tag}><${tag} style="border:1px solid #000; padding:4px 12px; text-align:center; ${bg}">${c1}</${tag}></tr>`;
+                        const tag = i === 0 ? 'th' : 'td';
+                        const bg = i === 0 ? 'background:#f1f5f9; font-weight:700;' : 'background:#ffffff;';
+                        newHtml += '<tr><' + tag + ' style="border:1px solid #000; padding:4px 12px; text-align:center; ' + bg + '">' + c0 + '</' + tag + '><' + tag + ' style="border:1px solid #000; padding:4px 12px; text-align:center; ' + bg + '">' + c1 + '</' + tag + '></tr>';
                     }
                     newHtml += '</tbody>';
                     tbl.innerHTML = newHtml;
@@ -535,7 +548,7 @@
 
         const extractedTables = [];
         s = s.replace(/<table\b[^>]*>[\s\S]*?<\/table\s*>/gi, function (match) {
-            const token = `\uE010tbl${idxToLetters(extractedTables.length)}\uE011`;
+            const token = '\uE010tbl' + idxToLetters(extractedTables.length) + '\uE011';
             extractedTables.push(match);
             return token;
         });
@@ -544,7 +557,7 @@
 
         extractedTables.forEach((rawTbl, idx) => {
             const renderedTbl = window.GVTableEngine.renderCleanTableDOM(rawTbl, formatMathCore);
-            const token = `\uE010tbl${idxToLetters(idx)}\uE011`;
+            const token = '\uE010tbl' + idxToLetters(idx) + '\uE011';
             s = s.split(token).join(renderedTbl);
         });
 
@@ -581,7 +594,7 @@
                     .replace(/\\n|\n/g, '<br>')
                     .replace(/(?:<br>\s*)+(<div class="gv-table-scroll")/g, '$1')
                     .replace(/(<\/table><\/div>)(?:\s*<br>)+/g, '$1');
-                return `<div>${stem}</div><div class="gv-mcq-grid"><div><strong>(A)</strong> ${parts[1].trim()}</div><div><strong>(B)</strong> ${parts[2].trim()}</div><div><strong>(C)</strong> ${parts[3].trim()}</div><div><strong>(D)</strong> ${parts[4].trim()}</div></div>`;
+                return '<div>' + stem + '</div><div class="gv-mcq-grid"><div><strong>(A)</strong> ' + parts[1].trim() + '</div><div><strong>(B)</strong> ' + parts[2].trim() + '</div><div><strong>(C)</strong> ' + parts[3].trim() + '</div><div><strong>(D)</strong> ' + parts[4].trim() + '</div></div>';
             }
         }
         if ((q.type === 'જોડકા જોડો' || String(q.type || '').toLowerCase().includes('match')) && typeof window.parseMatchTextGlobal === 'function') {
@@ -656,7 +669,7 @@
                 html += '<tr>';
                 for (let c = 0; c < colsCount; c++) {
                     const isHead = (firstRowHeader && r === 0) || (firstColHeader && c === 0);
-                    html += `<td style="padding:3px;"><input type="text" data-r="${r}" data-c="${c}" class="tb-cell-inp" value="${escapeAttr(gridData[r][c])}" style="width:100%; min-width:74px; padding:5px; border:1px solid ${isHead ? '#2563eb' : '#cbd5e1'}; background:${isHead ? '#eff6ff' : '#fff'}; font-weight:${isHead ? '700' : '400'}; border-radius:4px; font-size:12.5px;"></td>`;
+                    html += '<td style="padding:3px;"><input type="text" data-r="' + r + '" data-c="' + c + '" class="tb-cell-inp" value="' + escapeAttr(gridData[r][c]) + '" style="width:100%; min-width:74px; padding:5px; border:1px solid ' + (isHead ? '#2563eb' : '#cbd5e1') + '; background:' + (isHead ? '#eff6ff' : '#fff') + '; font-weight:' + (isHead ? '700' : '400') + '; border-radius:4px; font-size:12.5px;"></td>';
                 }
                 html += '</tr>';
             }
@@ -713,7 +726,7 @@
                 for (let c = 0; c < colsCount; c++) {
                     const isHead = (firstRowHeader && r === 0) || (firstColHeader && c === 0);
                     const tag = isHead ? 'th' : 'td';
-                    tblHtml += `<${tag}>${String(gridData[r][c] || '').trim()}</${tag}>`;
+                    tblHtml += '<' + tag + '>' + String(gridData[r][c] || '').trim() + '</' + tag + '>';
                 }
                 tblHtml += '</tr>';
             }
@@ -740,7 +753,7 @@
         let added = 0, updated = 0;
         incomingList.forEach((raw, idx) => {
             if (!raw || typeof raw !== 'object') return;
-            const id = raw.id ? String(raw.id) : `Q_${Date.now()}_${idx}`;
+            const id = raw.id ? String(raw.id) : ('Q_' + Date.now() + '_' + idx);
             const cleanQ = {
                 id: id,
                 standard: String(raw.standard || ''),
@@ -768,8 +781,8 @@
 
     async function fetchJSONNoCache(url) {
         const sep = url.includes('?') ? '&' : '?';
-        const res = await fetch(`${url}${sep}t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch(url + sep + 't=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         return await res.json();
     }
 
@@ -791,19 +804,18 @@
                 }
                 if (totalLoaded > 0) {
                     localStorage.setItem(LS_CATALOG_LOADED, '1');
-                    window.showToast(`☁️ ઓનલાઈન લાઈબ્રેરીમાંથી ${totalLoaded} પ્રશ્નો લોડ થઈ ગયા!`);
+                    window.showToast('☁️ ઓનલાઈન લાઈબ્રેરીમાંથી ' + totalLoaded + ' પ્રશ્નો લોડ થઈ ગયા!');
                     renderCurrentView();
                     return;
                 }
             }
         } catch (e) {
-            // Fallback to root questions.json if data/catalog.json does not exist
             try {
                 const fallbackData = await fetchJSONNoCache('questions.json');
                 const arr = Array.isArray(fallbackData) ? fallbackData : (Array.isArray(fallbackData.questions) ? fallbackData.questions : []);
                 if (arr.length > 0) {
                     mergeQuestionsIntoBank(arr);
-                    window.showToast(`☁️ ${arr.length} પ્રશ્નો ઓટો-લોડ થઈ ગયા!`);
+                    window.showToast('☁️ ' + arr.length + ' પ્રશ્નો ઓટો-લોડ થઈ ગયા!');
                     renderCurrentView();
                 }
             } catch (e2) { /* offline or no initial json */ }
@@ -839,16 +851,16 @@
         try {
             const catalog = await fetchJSONNoCache('data/catalog.json');
             if (!Array.isArray(catalog) || catalog.length === 0) {
-                box.innerHTML = `<div style="padding:14px; background:#fefce8; border:1px solid #fde047; border-radius:8px;">📌 <strong>data/catalog.json</strong> ખાલી છે. તેમાં તમારા વિષયોની વિગત ઉમેરો.</div>`;
+                box.innerHTML = '<div style="padding:14px; background:#fefce8; border:1px solid #fde047; border-radius:8px;">📌 <strong>data/catalog.json</strong> ખાલી છે. તેમાં તમારા વિષયોની વિગત ઉમેરો.</div>';
                 return;
             }
-            let html = `<div style="display:flex; flex-direction:column; gap:10px;">`;
+            let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
             catalog.forEach((item, idx) => {
                 const existingCount = appState.questions.filter(q => String(q.standard) === String(item.standard) && String(q.subject) === String(item.subject)).length;
                 html += `
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:12px; border:1.5px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
                         <div>
-                            <div style="font-weight:700; font-size:15px; color:#0f172a;">${escapeHtml(item.title || (`ધોરણ ${item.standard} — ${item.subject}`))}</div>
+                            <div style="font-weight:700; font-size:15px; color:#0f172a;">${escapeHtml(item.title || ('ધોરણ ' + item.standard + ' — ' + item.subject))}</div>
                             <div style="font-size:12.5px; color:#64748b; margin-top:2px;">ફાઈલ: <code>${escapeHtml(item.file)}</code> &nbsp;|&nbsp; તમારા ડિવાઈસમાં: <strong>${existingCount} પ્રશ્નો</strong></div>
                         </div>
                         <button type="button" class="gv-btn ${existingCount > 0 ? 'gv-btn-teal' : 'gv-btn-blue'} ol-dl-btn" data-idx="${idx}">
@@ -856,7 +868,7 @@
                         </button>
                     </div>`;
             });
-            html += `</div>`;
+            html += '</div>';
             box.innerHTML = html;
 
             box.querySelectorAll('.ol-dl-btn').forEach(btn => {
@@ -869,11 +881,11 @@
                         const data = await fetchJSONNoCache(item.file);
                         const arr = Array.isArray(data) ? data : (Array.isArray(data.questions) ? data.questions : []);
                         const res = mergeQuestionsIntoBank(arr);
-                        window.showToast(`✅ ${item.title || item.subject}: ${res.added} નવા + ${res.updated} અપડેટ થયા!`);
+                        window.showToast('✅ ' + (item.title || item.subject) + ': ' + res.added + ' નવા + ' + res.updated + ' અપડેટ થયા!');
                         renderCurrentView();
                         window.openOnlineLibraryModal();
                     } catch (err) {
-                        window.showToast(`❌ ફાઈલ (${item.file}) લોડ ન થઈ શકી: ${err.message}`, 'error');
+                        window.showToast('❌ ફાઈલ (' + item.file + ') લોડ ન થઈ શકી: ' + err.message, 'error');
                         btn.disabled = false;
                         btn.textContent = prevText;
                     }
@@ -890,7 +902,7 @@
     };
 
     // ==========================================
-    // 7. ADD / EDIT QUESTION MODAL (WITH IMAGES + TABLE BUILDER + LIVE PREVIEW)
+    // 7. ADD / EDIT QUESTION MODAL
     // ==========================================
     function readImageFileAsDataURL(file, callback) {
         if (!file) return;
@@ -905,7 +917,7 @@
 
         const existing = editId ? appState.questions.find(q => String(q.id) === String(editId)) : null;
         const qObj = existing ? Object.assign({}, existing) : {
-            id: `Q_${Date.now()}`,
+            id: 'Q_' + Date.now(),
             standard: appState.filters.std || '10',
             subject: appState.filters.subject || 'ગણિત',
             chapter: appState.filters.chapter || '1',
@@ -955,7 +967,7 @@
                     <div>
                         <label style="font-size:12px; font-weight:bold;">પ્રશ્નનો પ્રકાર:</label>
                         <input id="gvQType" list="gvTypeDatalist" class="gv-input" value="${escapeAttr(qObj.type)}">
-                        <datalist id="gvTypeDatalist">${typeList.map(t => `<option value="${escapeAttr(t)}">`).join('')}</datalist>
+                        <datalist id="gvTypeDatalist">${typeList.map(t => '<option value="' + escapeAttr(t) + '">').join('')}</datalist>
                     </div>
                     <div>
                         <label style="font-size:12px; font-weight:bold;">સૂચના (ખાલી રાખશો તો પ્રકાર મુજબ ઓટો આવશે):</label>
@@ -988,7 +1000,7 @@
                         </select>
                         <button type="button" id="gvQImgClear" class="gv-btn gv-btn-red" style="padding:3px 8px; font-size:11.5px;">હટાવો</button>
                     </div>
-                    <div id="gvQImgPrev" style="margin-top:6px;">${qObj.image ? `<img src="${qObj.image}" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">` : ''}</div>
+                    <div id="gvQImgPrev" style="margin-top:6px;">${qObj.image ? '<img src="' + qObj.image + '" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">' : ''}</div>
                 </div>
 
                 <div style="margin-bottom:10px;">
@@ -1018,7 +1030,7 @@
                         </select>
                         <button type="button" id="gvSImgClear" class="gv-btn gv-btn-red" style="padding:3px 8px; font-size:11.5px;">હટાવો</button>
                     </div>
-                    <div id="gvSImgPrev" style="margin-top:6px;">${qObj.solutionImage ? `<img src="${qObj.solutionImage}" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">` : ''}</div>
+                    <div id="gvSImgPrev" style="margin-top:6px;">${qObj.solutionImage ? '<img src="' + qObj.solutionImage + '" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">' : ''}</div>
                 </div>
 
                 <div style="display:flex; gap:8px; justify-content:space-between; flex-wrap:wrap; align-items:center;">
@@ -1039,9 +1051,9 @@
             if (!pBox || pBox.style.display === 'none') return;
             const qt = modal.querySelector('#gvQText').value;
             const qa = modal.querySelector('#gvQAns').value;
-            pBox.innerHTML = `<div style="font-size:12px; font-weight:700; color:#b45309; margin-bottom:4px;">👁️ લાઈવ પ્રિવ્યૂ (આ રીતે પ્રશ્ન અને કોષ્ટક દેખાશે):</div>
-                <div><strong>પ્રશ્ન:</strong> ${formatDisplayBlock(qt)}</div>
-                ${qa ? `<div style="margin-top:8px; padding-top:6px; border-top:1px dashed #fbbf24;"><strong>ઉત્તર:</strong> ${formatAnswerCardHTML(qa)}</div>` : ''}`;
+            pBox.innerHTML = '<div style="font-size:12px; font-weight:700; color:#b45309; margin-bottom:4px;">👁️ લાઈવ પ્રિવ્યૂ (આ રીતે પ્રશ્ન અને કોષ્ટક દેખાશે):</div>' +
+                '<div><strong>પ્રશ્ન:</strong> ' + formatDisplayBlock(qt) + '</div>' +
+                (qa ? '<div style="margin-top:8px; padding-top:6px; border-top:1px dashed #fbbf24;"><strong>ઉત્તર:</strong> ' + formatAnswerCardHTML(qa) + '</div>' : '');
         };
 
         modal.querySelector('#gvQModalLivePreviewBtn').onclick = () => {
@@ -1055,7 +1067,7 @@
         modal.querySelector('#gvQImgFile').onchange = (e) => {
             readImageFileAsDataURL(e.target.files[0], (dataUrl) => {
                 tempQImage = dataUrl;
-                modal.querySelector('#gvQImgPrev').innerHTML = `<img src="${dataUrl}" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">`;
+                modal.querySelector('#gvQImgPrev').innerHTML = '<img src="' + dataUrl + '" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">';
             });
         };
         modal.querySelector('#gvQImgClear').onclick = () => { tempQImage = ''; modal.querySelector('#gvQImgPrev').innerHTML = ''; };
@@ -1063,7 +1075,7 @@
         modal.querySelector('#gvSImgFile').onchange = (e) => {
             readImageFileAsDataURL(e.target.files[0], (dataUrl) => {
                 tempSImage = dataUrl;
-                modal.querySelector('#gvSImgPrev').innerHTML = `<img src="${dataUrl}" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">`;
+                modal.querySelector('#gvSImgPrev').innerHTML = '<img src="' + dataUrl + '" style="max-height:90px; border:1px solid #cbd5e1; border-radius:4px;">';
             });
         };
         modal.querySelector('#gvSImgClear').onclick = () => { tempSImage = ''; modal.querySelector('#gvSImgPrev').innerHTML = ''; };
@@ -1150,17 +1162,17 @@
         overlay.querySelector('#biImportBtn').onclick = () => {
             let raw = overlay.querySelector('#biText').value.trim();
             if (!raw) { window.showToast('કૃપા કરીને JSON પેસ્ટ કરો અથવા ફાઈલ પસંદ કરો.', 'error'); return; }
-            raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+            raw = raw.replace(/^\x60\x60\x60(?:json)?\s*/i, '').replace(/\x60\x60\x60\s*$/i, '').trim();
             try {
                 const parsed = JSON.parse(raw);
                 const arr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.questions) ? parsed.questions : null);
                 if (!arr) throw new Error('JSON માં પ્રશ્નોની યાદી (Array) મળી નથી.');
                 const res = mergeQuestionsIntoBank(arr);
-                window.showToast(`✅ ઈમ્પોર્ટ સફળ! ${res.added} નવા ઉમેરાયા, ${res.updated} અપડેટ થયા.`);
+                window.showToast('✅ ઈમ્પોર્ટ સફળ! ' + res.added + ' નવા ઉમેરાયા, ' + res.updated + ' અપડેટ થયા.');
                 close();
                 renderCurrentView();
             } catch (err) {
-                window.showToast(`❌ JSON ભૂલ: ${err.message}`, 'error');
+                window.showToast('❌ JSON ભૂલ: ' + err.message, 'error');
             }
         };
     }
@@ -1215,8 +1227,8 @@
             } else {
                 sheet.innerHTML = '<p style="color:red;">pdf-generator.js લોડ થયેલ નથી.</p>';
             }
-            overlay.querySelector('#pvTabQ').className = `gv-btn ${currentPreviewType === 'question' ? 'gv-btn-blue' : 'gv-btn-dark'}`;
-            overlay.querySelector('#pvTabSol').className = `gv-btn ${currentPreviewType === 'solution' ? 'gv-btn-blue' : 'gv-btn-dark'}`;
+            overlay.querySelector('#pvTabQ').className = 'gv-btn ' + (currentPreviewType === 'question' ? 'gv-btn-blue' : 'gv-btn-dark');
+            overlay.querySelector('#pvTabSol').className = 'gv-btn ' + (currentPreviewType === 'solution' ? 'gv-btn-blue' : 'gv-btn-dark');
         };
         renderSheet();
 
@@ -1225,7 +1237,7 @@
         overlay.querySelector('#pvTransposeTbl').onclick = () => {
             const sheet = overlay.querySelector('#gvPreviewSheetContent');
             const cnt = window.GVTableEngine.toggleTransposeInContainer(sheet);
-            if (cnt > 0) window.showToast(`🔄 ${cnt} મોટા કોષ્ટકનો લેઆઉટ બદલાયો!`);
+            if (cnt > 0) window.showToast('🔄 ' + cnt + ' મોટા કોષ્ટકનો લેઆઉટ બદલાયો!');
             else window.showToast('આ પેપરમાં આડા મોટા કોષ્ટક નથી.', 'error');
         };
         overlay.querySelector('#pvPrintPDF').onclick = () => window.openVectorPDFWindow(paperObj, currentPreviewType, true);
@@ -1287,18 +1299,18 @@
 
         const fillDropdowns = () => {
             const stds = Array.from(new Set(appState.questions.map(q => q.standard).filter(Boolean))).sort(sortAlphaNum);
-            overlay.querySelector('#pkStd').innerHTML = `<option value="">બધા ધોરણ</option>` + stds.map(s => `<option value="${escapeAttr(s)}" ${pState.std === s ? 'selected' : ''}>ધોરણ ${escapeHtml(s)}</option>`).join('');
+            overlay.querySelector('#pkStd').innerHTML = '<option value="">બધા ધોરણ</option>' + stds.map(s => '<option value="' + escapeAttr(s) + '" ' + (pState.std === s ? 'selected' : '') + '>ધોરણ ' + escapeHtml(s) + '</option>').join('');
 
             const subPool = appState.questions.filter(q => !pState.std || String(q.standard) === pState.std);
             const subs = Array.from(new Set(subPool.map(q => q.subject).filter(Boolean))).sort(sortAlphaNum);
-            overlay.querySelector('#pkSub').innerHTML = `<option value="">બધા વિષય</option>` + subs.map(s => `<option value="${escapeAttr(s)}" ${pState.subject === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('');
+            overlay.querySelector('#pkSub').innerHTML = '<option value="">બધા વિષય</option>' + subs.map(s => '<option value="' + escapeAttr(s) + '" ' + (pState.subject === s ? 'selected' : '') + '>' + escapeHtml(s) + '</option>').join('');
 
             const chPool = subPool.filter(q => !pState.subject || String(q.subject) === pState.subject);
             const chs = Array.from(new Set(chPool.map(q => q.chapter).filter(Boolean))).sort(sortAlphaNum);
-            overlay.querySelector('#pkCh').innerHTML = `<option value="">બધા પ્રકરણ</option>` + chs.map(c => `<option value="${escapeAttr(c)}" ${pState.chapter === c ? 'selected' : ''}>પ્રકરણ ${escapeHtml(c)}</option>`).join('');
+            overlay.querySelector('#pkCh').innerHTML = '<option value="">બધા પ્રકરણ</option>' + chs.map(c => '<option value="' + escapeAttr(c) + '" ' + (pState.chapter === c ? 'selected' : '') + '>પ્રકરણ ' + escapeHtml(c) + '</option>').join('');
 
             const types = Array.from(new Set(chPool.map(q => q.type).filter(Boolean)));
-            overlay.querySelector('#pkType').innerHTML = `<option value="">બધા પ્રકાર</option>` + types.map(t => `<option value="${escapeAttr(t)}" ${pState.type === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('');
+            overlay.querySelector('#pkType').innerHTML = '<option value="">બધા પ્રકાર</option>' + types.map(t => '<option value="' + escapeAttr(t) + '" ' + (pState.type === t ? 'selected' : '') + '>' + escapeHtml(t) + '</option>').join('');
         };
 
         const renderList = () => {
@@ -1315,11 +1327,11 @@
 
             const listEl = overlay.querySelector('#pkList');
             if (!filtered.length) {
-                listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#64748b;">કોઈ પ્રશ્ન મળ્યો નથી.</div>`;
+                listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">કોઈ પ્રશ્ન મળ્યો નથી.</div>';
                 return;
             }
             const shown = filtered.slice(0, 80);
-            listEl.innerHTML = `<div style="font-size:12px; color:#64748b; margin-bottom:6px;">કુલ ${filtered.length} પ્રશ્નો મળ્યા (પ્રથમ ${shown.length} દર્શાવ્યા છે)</div>` +
+            listEl.innerHTML = '<div style="font-size:12px; color:#64748b; margin-bottom:6px;">કુલ ' + filtered.length + ' પ્રશ્નો મળ્યા (પ્રથમ ' + shown.length + ' દર્શાવ્યા છે)</div>' +
                 shown.map(q => {
                     const added = draftIds.has(String(q.id));
                     return `
@@ -1331,7 +1343,7 @@
                                     <span class="gv-badge gv-badge-amber">${q.marks} ગુણ</span>
                                 </div>
                                 <button type="button" class="gv-btn ${added ? 'gv-btn-red' : 'gv-btn-green'} pk-toggle-btn" data-id="${escapeAttr(q.id)}" style="padding:4px 10px; font-size:12px;">
-                                    ${added ? '➖ દૂર કરો' : `➕ વિભાગ ${pState.targetSec}`}
+                                    ${added ? '➖ દૂર કરો' : ('➕ વિભાગ ' + pState.targetSec)}
                                 </button>
                             </div>
                             <div style="font-size:14px; line-height:1.8;">${formatQuestionCardHTML(q)}</div>
@@ -1379,7 +1391,7 @@
     function renderDashboard(container) {
         const subjectGroups = {};
         appState.questions.forEach(q => {
-            const key = `${q.standard || '?'}|||${q.subject || 'અન્ય'}`;
+            const key = (q.standard || '?') + '|||' + (q.subject || 'અન્ય');
             if (!subjectGroups[key]) subjectGroups[key] = { std: q.standard || '?', subject: q.subject || 'અન્ય', chapters: new Set(), count: 0 };
             if (q.chapter) subjectGroups[key].chapters.add(String(q.chapter));
             subjectGroups[key].count++;
@@ -1459,8 +1471,8 @@
         container.querySelectorAll('.dash-exp-sub').forEach(btn => {
             btn.onclick = () => {
                 const subQs = appState.questions.filter(q => String(q.standard) === btn.dataset.std && String(q.subject) === btn.dataset.sub);
-                downloadJSONFile(subQs, `std${btn.dataset.std}_${btn.dataset.sub}.json`);
-                window.showToast(`💾 ${subQs.length} પ્રશ્નોનો બેકઅપ ડાઉનલોડ થયો!`);
+                downloadJSONFile(subQs, 'std' + btn.dataset.std + '_' + btn.dataset.sub + '.json');
+                window.showToast('💾 ' + subQs.length + ' પ્રશ્નોનો બેકઅપ ડાઉનલોડ થયો!');
             };
         });
     }
@@ -1509,12 +1521,12 @@
                 </div>
 
                 <div class="gv-filter-grid">
-                    <select id="fStd" class="gv-select"><option value="">બધા ધોરણ</option>${stds.map(s => `<option value="${escapeAttr(s)}" ${f.std === s ? 'selected' : ''}>ધોરણ ${escapeHtml(s)}</option>`).join('')}</select>
-                    <select id="fSub" class="gv-select"><option value="">બધા વિષય</option>${subs.map(s => `<option value="${escapeAttr(s)}" ${f.subject === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}</select>
-                    <select id="fCh" class="gv-select"><option value="">બધા પ્રકરણ</option>${chs.map(c => `<option value="${escapeAttr(c)}" ${f.chapter === c ? 'selected' : ''}>પ્રકરણ ${escapeHtml(c)}</option>`).join('')}</select>
-                    <select id="fType" class="gv-select"><option value="">બધા પ્રકાર</option>${types.map(t => `<option value="${escapeAttr(t)}" ${f.type === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}</select>
-                    <select id="fMarks" class="gv-select"><option value="">બધા ગુણ</option>${marksList.map(m => `<option value="${escapeAttr(m)}" ${f.marks === m ? 'selected' : ''}>${escapeHtml(m)} ગુણ</option>`).join('')}</select>
-                    <select id="fInst" class="gv-select"><option value="">બધી સૂચનાઓ</option>${insts.map(i => `<option value="${escapeAttr(i)}" ${f.instruction === i ? 'selected' : ''}>${escapeHtml(i.slice(0, 48))}</option>`).join('')}</select>
+                    <select id="fStd" class="gv-select"><option value="">બધા ધોરણ</option>${stds.map(s => '<option value="' + escapeAttr(s) + '" ' + (f.std === s ? 'selected' : '') + '>ધોરણ ' + escapeHtml(s) + '</option>').join('')}</select>
+                    <select id="fSub" class="gv-select"><option value="">બધા વિષય</option>${subs.map(s => '<option value="' + escapeAttr(s) + '" ' + (f.subject === s ? 'selected' : '') + '>' + escapeHtml(s) + '</option>').join('')}</select>
+                    <select id="fCh" class="gv-select"><option value="">બધા પ્રકરણ</option>${chs.map(c => '<option value="' + escapeAttr(c) + '" ' + (f.chapter === c ? 'selected' : '') + '>પ્રકરણ ' + escapeHtml(c) + '</option>').join('')}</select>
+                    <select id="fType" class="gv-select"><option value="">બધા પ્રકાર</option>${types.map(t => '<option value="' + escapeAttr(t) + '" ' + (f.type === t ? 'selected' : '') + '>' + escapeHtml(t) + '</option>').join('')}</select>
+                    <select id="fMarks" class="gv-select"><option value="">બધા ગુણ</option>${marksList.map(m => '<option value="' + escapeAttr(m) + '" ' + (f.marks === m ? 'selected' : '') + '>' + escapeHtml(m) + ' ગુણ</option>').join('')}</select>
+                    <select id="fInst" class="gv-select"><option value="">બધી સૂચનાઓ</option>${insts.map(i => '<option value="' + escapeAttr(i) + '" ' + (f.instruction === i ? 'selected' : '') + '>' + escapeHtml(i.slice(0, 48)) + '</option>').join('')}</select>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                     <input id="fSearch" class="gv-input" style="flex:1; min-width:200px;" value="${escapeAttr(f.search)}" placeholder="🔍 પ્રશ્ન, ઉત્તર કે ID શોધો...">
@@ -1523,7 +1535,7 @@
             </div>
 
             <div id="qbCardsWrap">
-                ${pageItems.length === 0 ? `<div class="gv-card" style="text-align:center; color:#64748b; padding:30px;">કોઈ પ્રશ્ન મળ્યો નથી.</div>` : pageItems.map((q, idx) => `
+                ${pageItems.length === 0 ? '<div class="gv-card" style="text-align:center; color:#64748b; padding:30px;">કોઈ પ્રશ્ન મળ્યો નથી.</div>' : pageItems.map((q, idx) => `
                     <div class="gv-q-card">
                         <div class="gv-q-head">
                             <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
@@ -1540,12 +1552,12 @@
                             </div>
                         </div>
                         <div class="gv-q-body">${formatQuestionCardHTML(q)}</div>
-                        ${q.image ? `<div style="margin:6px 0; text-align:${q.imageAlign || 'center'};"><img src="${q.image}" style="width:${q.imageWidth || '220px'}; max-width:100%; border:1px solid #e2e8f0; border-radius:4px;"></div>` : ''}
+                        ${q.image ? '<div style="margin:6px 0; text-align:' + (q.imageAlign || 'center') + ';"><img src="' + q.image + '" style="width:' + (q.imageWidth || '220px') + '; max-width:100%; border:1px solid #e2e8f0; border-radius:4px;"></div>' : ''}
                         ${(q.answer || q.solutionImage) ? `
                             <div class="gv-q-ans">
                                 <strong style="color:#15803d;">ઉત્તર:</strong>
                                 <div style="margin-top:3px;">${formatAnswerCardHTML(q.answer)}</div>
-                                ${q.solutionImage ? `<div style="margin-top:6px; text-align:${q.solutionImageAlign || 'left'};"><img src="${q.solutionImage}" style="width:${q.solutionImageWidth || '240px'}; max-width:100%; border:1px solid #cbd5e1; border-radius:4px;"></div>` : ''}
+                                ${q.solutionImage ? '<div style="margin-top:6px; text-align:' + (q.solutionImageAlign || 'left') + ';"><img src="' + q.solutionImage + '" style="width:' + (q.solutionImageWidth || '240px') + '; max-width:100%; border:1px solid #cbd5e1; border-radius:4px;"></div>' : ''}
                             </div>
                         ` : ''}
                     </div>
@@ -1566,20 +1578,20 @@
         container.querySelector('#qbLibBtn').onclick = () => window.openOnlineLibraryModal();
         container.querySelector('#qbSubBackup').onclick = () => {
             if (!filtered.length) { window.showToast('બેકઅપ માટે કોઈ પ્રશ્ન નથી.', 'error'); return; }
-            const fn = `std${f.std || 'all'}_${f.subject || 'subject'}_backup.json`;
+            const fn = 'std' + (f.std || 'all') + '_' + (f.subject || 'subject') + '_backup.json';
             downloadJSONFile(filtered, fn);
-            window.showToast(`💾 ${filtered.length} પ્રશ્નોનો બેકઅપ ડાઉનલોડ થયો!`);
+            window.showToast('💾 ' + filtered.length + ' પ્રશ્નોનો બેકઅપ ડાઉનલોડ થયો!');
         };
         container.querySelector('#qbFullBackup').onclick = () => {
-            downloadJSONFile(appState.questions, `gyanvruksh_full_backup_${new Date().toISOString().slice(0, 10)}.json`);
-            window.showToast(`💾 કુલ ${appState.questions.length} પ્રશ્નોનો સંપૂર્ણ બેકઅપ ડાઉનલોડ થયો!`);
+            downloadJSONFile(appState.questions, 'gyanvruksh_full_backup_' + new Date().toISOString().slice(0, 10) + '.json');
+            window.showToast('💾 કુલ ' + appState.questions.length + ' પ્રશ્નોનો સંપૂર્ણ બેકઅપ ડાઉનલોડ થયો!');
         };
         container.querySelector('#qbDelFiltered').onclick = () => {
             if (!filtered.length) return;
-            if (!confirm(`શું તમે ફિલ્ટર થયેલા કુલ ${filtered.length} પ્રશ્નો ડિલીટ કરવા માંગો છો?`)) return;
+            if (!confirm('શું તમે ફિલ્ટર થયેલા કુલ ' + filtered.length + ' પ્રશ્નો ડિલીટ કરવા માંગો છો?')) return;
             const delSet = new Set(filtered.map(x => String(x.id)));
             saveQuestionsToStorage(appState.questions.filter(x => !delSet.has(String(x.id))));
-            window.showToast(`🗑️ ${filtered.length} પ્રશ્નો ડિલીટ થયા.`);
+            window.showToast('🗑️ ' + filtered.length + ' પ્રશ્નો ડિલીટ થયા.');
             renderCurrentView();
         };
 
@@ -1664,7 +1676,7 @@
         if (blueprint.meta) {
             d.sectionsMetadata = JSON.parse(JSON.stringify(blueprint.meta));
         }
-        window.showToast(`⚡ ${picked.length} પ્રશ્નોનું પેપર ઓટો-જનરેટ થઈ ગયું! (કુલ ગુણ: ${computeDraftTotalMarks()})`);
+        window.showToast('⚡ ' + picked.length + ' પ્રશ્નોનું પેપર ઓટો-જનરેટ થઈ ગયું! (કુલ ગુણ: ' + computeDraftTotalMarks() + ')');
         renderCurrentView();
     }
 
@@ -1694,10 +1706,10 @@
                 <div class="gv-filter-grid">
                     <div><label style="font-size:12px; font-weight:bold;">પેપરનું નામ:</label><input id="pmTitle" class="gv-input" value="${escapeAttr(d.title)}"></div>
                     <div><label style="font-size:12px; font-weight:bold;">ધોરણ:</label>
-                        <select id="pmStd" class="gv-select"><option value="">પસંદ કરો</option>${stds.map(s => `<option value="${escapeAttr(s)}" ${String(d.standard) === String(s) ? 'selected' : ''}>ધોરણ ${escapeHtml(s)}</option>`).join('')}</select>
+                        <select id="pmStd" class="gv-select"><option value="">પસંદ કરો</option>${stds.map(s => '<option value="' + escapeAttr(s) + '" ' + (String(d.standard) === String(s) ? 'selected' : '') + '>ધોરણ ' + escapeHtml(s) + '</option>').join('')}</select>
                     </div>
                     <div><label style="font-size:12px; font-weight:bold;">વિષય:</label>
-                        <select id="pmSub" class="gv-select"><option value="">પસંદ કરો</option>${subs.map(s => `<option value="${escapeAttr(s)}" ${String(d.subject) === String(s) ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}</select>
+                        <select id="pmSub" class="gv-select"><option value="">પસંદ કરો</option>${subs.map(s => '<option value="' + escapeAttr(s) + '" ' + (String(d.subject) === String(s) ? 'selected' : '') + '>' + escapeHtml(s) + '</option>').join('')}</select>
                     </div>
                     <div><label style="font-size:12px; font-weight:bold;">તારીખ:</label><input id="pmDate" type="date" class="gv-input" value="${escapeAttr(d.date)}"></div>
                     <div><label style="font-size:12px; font-weight:bold;">ભાષા:</label>
@@ -1752,7 +1764,7 @@
                     return `
                         <div style="border:1.5px solid #cbd5e1; border-radius:10px; padding:12px; margin-bottom:14px; background:#f8fafc;">
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-                                <strong style="font-size:15px; color:#1e3a8a;">${sec === 'None' ? 'વિભાગ વગર (None)' : `વિભાગ - ${sec}`} (${secItems.length} પ્રશ્નો | અસરકારક ગુણ: ${effMarks})</strong>
+                                <strong style="font-size:15px; color:#1e3a8a;">${sec === 'None' ? 'વિભાગ વગર (None)' : ('વિભાગ - ' + sec)} (${secItems.length} પ્રશ્નો | અસરકારક ગુણ: ${effMarks})</strong>
                                 ${sec !== 'None' ? `
                                     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
                                         <input type="number" min="0" max="${secItems.length}" class="gv-input pm-sec-att" data-sec="${sec}" value="${meta.attemptCount || 0}" style="width:130px; padding:4px 7px; font-size:12px;" title="કેટલા પ્રશ્નો લખવાના (0 = બધા)" placeholder="લખવાના પ્રશ્નો (0=બધા)">
@@ -2012,6 +2024,8 @@
     // 12. MAIN APP SHELL RENDER & BOOTSTRAP
     // ==========================================
     function getAppRoot() {
+        document.body.style.display = 'block';
+        document.body.style.visibility = 'visible';
         let root = document.getElementById('gv-app-root') || document.getElementById('app') || document.getElementById('root');
         if (!root) {
             document.body.innerHTML = '';
@@ -2019,6 +2033,9 @@
             root.id = 'gv-app-root';
             document.body.appendChild(root);
         }
+        root.style.display = 'block';
+        root.style.visibility = 'visible';
+        root.style.opacity = '1';
         return root;
     }
 
@@ -2036,7 +2053,7 @@
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button type="button" id="topLibBtn" class="gv-btn gv-btn-teal" style="padding:6px 12px; font-size:12.5px;">☁️ ઓનલાઈન લાઈબ્રેરી</button>
-                        ${appState.deferredInstallPrompt ? `<button type="button" id="topInstallBtn" class="gv-btn gv-btn-green" style="padding:6px 12px; font-size:12.5px;">📲 એપ ઇન્સ્ટોલ કરો</button>` : ''}
+                        ${appState.deferredInstallPrompt ? '<button type="button" id="topInstallBtn" class="gv-btn gv-btn-green" style="padding:6px 12px; font-size:12.5px;">📲 એપ ઇન્સ્ટોલ કરો</button>' : ''}
                     </div>
                 </header>
                 <nav class="gv-nav">
