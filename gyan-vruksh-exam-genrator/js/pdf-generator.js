@@ -107,9 +107,11 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                 sup { font-size: 0.8em; vertical-align: super; line-height: 0; font-weight: 600; }
                 sub { font-size: 0.8em; vertical-align: sub; line-height: 0; font-weight: 600; }
                 .gv-passage-box { background: #f8fafc; border: 1.2px solid #333; border-left: 3.5px solid #000; padding: 8px 12px; margin: 6px 0 8px 0; font-weight: 400; line-height: 1.75; page-break-inside: avoid; }
-                .gv-data-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 13.5px; page-break-inside: avoid; }
-                .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 4px 7px; text-align: center; }
+                .gv-table-scroll { width: 100%; overflow-x: auto; margin: 6px 0; page-break-inside: avoid; }
+                .gv-data-table { width: 100%; max-width: 100%; border-collapse: collapse; margin: 0; font-size: 12.5px; line-height: 1.45; page-break-inside: avoid; background: #fff; }
+                .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; word-break: break-word; }
                 .gv-data-table th { background: #f1f5f9; font-weight: bold; }
+                .gv-data-table .m-frac { font-size: 0.88em; padding: 1px 2px; margin: 1px; line-height: 1.15; }
                 .top-action-bar { position: sticky; top: 0; left: 0; width: 100%; background: #1e293b; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif; }
                 .action-btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; }
                 .btn-save-pdf { background: #16a34a; }
@@ -119,6 +121,7 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                     body { background: #ffffff; }
                     .no-print { display: none !important; }
                     .paper-sheet { width: 100%; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
+                    .gv-table-scroll { overflow: visible !important; }
                 }
                 .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
                 .print-header h1 { font-size: 22px; margin: 0 0 3px 0; font-weight: 700; line-height: 1.3; }
@@ -186,8 +189,10 @@ window.downloadWord = function(paperOrId, type) {
                 .mcq-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
                 .mcq-table td { width: 50%; padding: 2px 6px 2px 0; }
                 .p-ans-box { margin-top: 4px; padding: 6px; background: #f8fafc; border-left: 3px solid #334155; }
-                .gv-data-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
-                .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 4px; text-align: center; }
+                .gv-table-scroll { width: 100%; margin: 6px 0; }
+                .gv-data-table { width: 100%; border-collapse: collapse; margin: 0; font-size: 10pt; }
+                .gv-data-table th, .gv-data-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; }
+                .gv-data-table th { background: #f1f5f9; font-weight: bold; }
                 .gv-passage-box { border: 1px solid #333; padding: 8px; background: #f8fafc; margin: 6px 0; }
                 .gv-paper-img-wrap { margin: 6px 0; }
             </style>
@@ -374,20 +379,36 @@ window.formatForPDF = function(q, paperLang = 'gu', forWord = false) {
             const imgMid = q.image
                 ? `<div class="gv-mcq-img-placed">${window.renderImageBlockForPDF(q.image, q.imageWidth || '220px', q.imageAlign || 'center', forWord)}</div>`
                 : '';
-            return `${parts[0].trim()}${imgMid}<table class="mcq-table"><tr><td>(A) ${parts[1].trim()}</td><td>(B) ${parts[2].trim()}</td></tr><tr><td>(C) ${parts[3].trim()}</td><td>(D) ${parts[4].trim()}</td></tr></table>`;
+            const stemHTML = parts[0].trim()
+                .replace(/\\n|\n/g, '<br>')
+                .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
+                .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
+            return `${stemHTML}${imgMid}<table class="mcq-table"><tr><td>(A) ${parts[1].trim()}</td><td>(B) ${parts[2].trim()}</td></tr><tr><td>(C) ${parts[3].trim()}</td><td>(D) ${parts[4].trim()}</td></tr></table>`;
         }
     }
     if ((q.type === 'જોડકા જોડો' || String(q.type || '').toLowerCase().includes('match')) && window.parseMatchTextGlobal) {
         return window.parseMatchTextGlobal(t, q.lang || paperLang);
     }
-    return t.replace(/\\n|\n/g, '<br>');
+    return t
+        .replace(/\\n|\n/g, '<br>')
+        .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
+        .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
 };
 
 window.formatAns = function(ans) {
     const fmt = window.formatScienceAndMath || ((x) => x);
     let formattedAns = fmt(ans || '');
     let lines = formattedAns.split(/\\n|\n/);
-    if (lines.length > 1) return lines.map(l => l.trim() ? `<div style="margin-bottom:5px;">&#8226; ${l.trim()}</div>` : '').join('');
+    if (lines.length > 1) {
+        return lines.map(l => {
+            const tr = l.trim();
+            if (!tr) return '';
+            if (/^<div class="gv-table-scroll">|^<table\b/i.test(tr)) {
+                return `<div style="margin:6px 0;">${tr}</div>`;
+            }
+            return `<div style="margin-bottom:5px;">&#8226; ${tr}</div>`;
+        }).join('');
+    }
     return formattedAns;
 };
 
