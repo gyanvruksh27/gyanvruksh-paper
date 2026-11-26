@@ -1,4 +1,4 @@
-// js/pdf-generator.js — Gyan Vruksh 3.2 (Full-Width Print-Safe Statistics/Probability Tables + Crisp Images + Section-A Board Order)
+// js/pdf-generator.js — Gyan Vruksh 3.3 (Bulletproof DOM Tables + 1-Click Horizontal/Vertical Print Toggle + Full-Width A4 Fit)
 
 window.GV_LANG_LABELS = {
     gu: { std: 'ધોરણ', sub: 'વિષય', date: 'તારીખ', marks: 'કુલ ગુણ', section: 'વિભાગ', ans: 'ઉત્તર', colA: 'વિભાગ A', colB: 'વિભાગ B', solTitle: '(Answer Key)', anyOf: 'કોઈ પણ' },
@@ -16,7 +16,7 @@ window.GV_PDF_DEFAULT_INST = {
     'એક વાક્યમાં જવાબ આપો': 'નીચેના પ્રશ્નોના એક વાક્યમાં ઉત્તર લખો.',
     'એક શબ્દમાં ઉત્તર': 'નીચેના પ્રશ્નોના એક શબ્દમાં ઉત્તર લખો.',
     'વ્યાખ્યા આપો': 'નીચે આપેલા પદોની વ્યાખ્યા આપો.',
-    'સૂત્ર / એકમ લખો': 'નીચે આપેલાના રાસાયણિક સૂત્ર અથવા SI એકમ લખો.',
+    'સૂત્ર / એકમ લખો': 'નીચે આપેલાના સૂત્ર અથવા વ્યાખ્યા લખો.',
     'પૂરું નામ લખો': 'નીચે આપેલા સંક્ષિપ્ત નામોના પૂરા નામ લખો.',
     'અસંગત પદ શોધો': 'નીચે આપેલામાંથી અસંગત પદ શોધીને લખો.',
     'સંબંધ પૂર્ણ કરો': 'પ્રથમ જોડીનો સંબંધ સમજી બીજી જોડી પૂર્ણ કરો.',
@@ -32,7 +32,7 @@ window.GV_PDF_DEFAULT_INST = {
     'સવિસ્તાર જવાબ આપો': 'નીચેના પ્રશ્નોના સવિસ્તાર ઉત્તર લખો.'
 };
 
-window.detectPaperLanguage = function(paper) {
+window.detectPaperLanguage = function (paper) {
     if (paper && paper.lang && window.GV_LANG_LABELS[paper.lang]) return paper.lang;
     const sub = String((paper && paper.subject) || '').toLowerCase();
     if (sub.includes('english') || sub.includes('અંગ્રેજી')) return 'en';
@@ -42,7 +42,7 @@ window.detectPaperLanguage = function(paper) {
     return firstQ ? firstQ.lang : 'gu';
 };
 
-window.getPDFQuestionInstruction = function(q) {
+window.getPDFQuestionInstruction = function (q) {
     if (!q || q.type === 'instruction') return '';
     if (q.instruction && String(q.instruction).trim() !== '') return String(q.instruction).trim();
     if (typeof window.getEffectiveInstruction === 'function') return window.getEffectiveInstruction(q);
@@ -60,15 +60,15 @@ function resolvePaperObj(paperOrId) {
     }
 }
 
-window.downloadPDF = function(paperId, type) {
+window.downloadPDF = function (paperId, type) {
     window.openVectorPDFWindow(paperId, type, true);
 };
 
-window.printPaper = function(paperId, type) {
+window.printPaper = function (paperId, type) {
     window.openVectorPDFWindow(paperId, type, false);
 };
 
-window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
+window.openVectorPDFWindow = function (paperOrId, type, isDownloadMode) {
     const paper = resolvePaperObj(paperOrId);
     if (!paper) return;
 
@@ -117,9 +117,12 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
                 .gv-data-table.gv-tbl-compact th, .gv-data-table.gv-tbl-compact td { padding: 3px 3px !important; }
                 .gv-data-table.gv-tbl-ultra { font-size: 10px !important; }
                 .gv-data-table.gv-tbl-ultra th, .gv-data-table.gv-tbl-ultra td { padding: 2px 2px !important; }
+                .gv-data-table.gv-tbl-transposed { width: auto !important; min-width: 55% !important; max-width: 100% !important; margin: 4px auto !important; font-size: 12.5px !important; }
+                .gv-data-table.gv-tbl-transposed th, .gv-data-table.gv-tbl-transposed td { padding: 4px 12px !important; white-space: normal !important; }
                 .gv-data-table .m-frac { font-size: 0.88em; padding: 1px 2px; margin: 1px; line-height: 1.15; }
-                .top-action-bar { position: sticky; top: 0; left: 0; width: 100%; background: #1e293b; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif; }
-                .action-btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; }
+                .top-action-bar { position: sticky; top: 0; left: 0; width: 100%; background: #1e293b; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif; }
+                .action-btn { padding: 8px 14px; border: none; border-radius: 6px; font-size: 13.5px; font-weight: bold; cursor: pointer; color: white; }
+                .btn-transpose { background: #0d9488; }
                 .btn-save-pdf { background: #16a34a; }
                 .btn-close { background: #dc2626; }
                 .paper-sheet { width: 210mm; min-height: 297mm; margin: 20px auto; padding: 12mm 14mm; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.4); position: relative; text-align: left; }
@@ -152,13 +155,49 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
         <body>
             <div class="top-action-bar no-print">
                 <div style="font-size:14px;">💡 <strong>PDF ટિપ:</strong> Destination માં <strong>"Save as PDF"</strong> પસંદ કરી Save દબાવો.</div>
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="action-btn btn-transpose" onclick="toggleWideTablesOrientation()">🔄 કોષ્ટક: આડું / ઊભું</button>
                     <button class="action-btn btn-save-pdf" onclick="window.print()">🖨️ Save as PDF / Print</button>
                     <button class="action-btn btn-close" onclick="window.close()">✖ બંધ કરો</button>
                 </div>
             </div>
             <div class="paper-sheet" id="printableArea">${rawHTML}</div>
             <script>
+                function toggleWideTablesOrientation() {
+                    var tables = document.querySelectorAll('table[data-gv-transposable="1"]');
+                    tables.forEach(function(tbl) {
+                        if (!tbl.dataset.origHtml) {
+                            tbl.dataset.origHtml = tbl.innerHTML;
+                            tbl.dataset.origClass = tbl.className;
+                            tbl.dataset.origStyle = tbl.getAttribute('style') || '';
+                        }
+                        if (tbl.dataset.isTransposed === '1') {
+                            tbl.innerHTML = tbl.dataset.origHtml;
+                            tbl.className = tbl.dataset.origClass;
+                            tbl.setAttribute('style', tbl.dataset.origStyle);
+                            tbl.dataset.isTransposed = '0';
+                        } else {
+                            var rows = tbl.querySelectorAll('tr');
+                            if (rows.length !== 2) return;
+                            var r0 = Array.from(rows[0].children).filter(function(c){ return c.tagName === 'TH' || c.tagName === 'TD'; });
+                            var r1 = Array.from(rows[1].children).filter(function(c){ return c.tagName === 'TH' || c.tagName === 'TD'; });
+                            var maxLen = Math.max(r0.length, r1.length);
+                            var out = '<tbody>';
+                            for (var i = 0; i < maxLen; i++) {
+                                var c0 = r0[i] ? r0[i].innerHTML : '';
+                                var c1 = r1[i] ? r1[i].innerHTML : '';
+                                var tag = i === 0 ? 'th' : 'td';
+                                var bg = i === 0 ? 'background:#f1f5f9; font-weight:700;' : 'background:#ffffff;';
+                                out += '<tr><' + tag + ' style="border:1px solid #000; padding:4px 12px; text-align:center; ' + bg + '">' + c0 + '</' + tag + '><' + tag + ' style="border:1px solid #000; padding:4px 12px; text-align:center; ' + bg + '">' + c1 + '</' + tag + '></tr>';
+                            }
+                            out += '</tbody>';
+                            tbl.innerHTML = out;
+                            tbl.className = 'gv-data-table gv-tbl-transposed';
+                            tbl.setAttribute('style', 'width:auto; min-width:55%; max-width:100%; border-collapse:collapse; margin:4px auto; background:#ffffff; border:1.5px solid #000; font-size:12.5px;');
+                            tbl.dataset.isTransposed = '1';
+                        }
+                    });
+                }
                 window.onload = function() {
                     var triggerPrint = function() { setTimeout(function() { window.print(); }, 450); };
                     if (document.fonts && document.fonts.ready) {
@@ -175,7 +214,7 @@ window.openVectorPDFWindow = function(paperOrId, type, isDownloadMode) {
     printWin.focus();
 };
 
-window.downloadWord = function(paperOrId, type) {
+window.downloadWord = function (paperOrId, type) {
     const paper = resolvePaperObj(paperOrId);
     if (!paper) return;
 
@@ -228,7 +267,7 @@ window.downloadWord = function(paperOrId, type) {
     }
 };
 
-window.renderImageBlockForPDF = function(src, widthSetting, alignSetting, forWord = false) {
+window.renderImageBlockForPDF = function (src, widthSetting, alignSetting, forWord = false) {
     if (!src || !String(src).trim()) return '';
     const wVal = widthSetting || '220px';
     const alignVal = alignSetting || 'center';
@@ -239,7 +278,7 @@ window.renderImageBlockForPDF = function(src, widthSetting, alignSetting, forWor
     return `<div class="gv-paper-img-wrap" style="text-align:${alignVal}; margin:7px 0;"><img src="${src}" style="width:${wVal}; max-width:100%; height:auto; border:1px solid #e2e8f0; padding:2px; background:#fff;"></div>`;
 };
 
-window.groupSectionQuestionsByInstruction = function(items, hasSecOption = false, secName = '') {
+window.groupSectionQuestionsByInstruction = function (items, hasSecOption = false, secName = '') {
     const hasManualInst = items.some(q => q.type === 'instruction');
     if (hasManualInst) return items;
 
@@ -271,7 +310,7 @@ window.groupSectionQuestionsByInstruction = function(items, hasSecOption = false
     return result;
 };
 
-window.getSectionEffectiveMarksForPDF = function(secQuestions, secMeta) {
+window.getSectionEffectiveMarksForPDF = function (secQuestions, secMeta) {
     if (typeof window.calculateSectionEffectiveMarks === 'function') {
         return window.calculateSectionEffectiveMarks(secQuestions, secMeta);
     }
@@ -290,8 +329,8 @@ function renderInstructionRowHTML(leftText, rightText, className, forWord) {
     return `<div class="${className}"><span>${leftText}</span><span>${rightText}</span></div>`;
 }
 
-window.generatePaperHTML = function(paper, type, forWord = false) {
-    const schoolData = JSON.parse(localStorage.getItem('gyanVruksh_schoolProfile')) || { name: "જ્ઞાન વૃક્ષ વિદ્યાલય", address: "" };
+window.generatePaperHTML = function (paper, type, forWord = false) {
+    const schoolData = JSON.parse(localStorage.getItem('gyanVruksh_schoolProfile')) || { name: 'જ્ઞાન વૃક્ષ વિદ્યાલય', address: '' };
     const pdfSet = JSON.parse(localStorage.getItem('gyanVruksh_pdfSettings')) || { examName: true, date: true, std: true, subject: true, marks: true, numbering: 'continuous', watermark: '' };
     const sMeta = paper.sectionsMetadata || {};
     const order = paper.sectionOrder || ['None', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -299,7 +338,7 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
     const lang = window.detectPaperLanguage(paper);
     const L = window.GV_LANG_LABELS[lang] || window.GV_LANG_LABELS.gu;
 
-    const sData = { "None": [], A: [], B: [], C: [], D: [], E: [], F: [], G: [] };
+    const sData = { None: [], A: [], B: [], C: [], D: [], E: [], F: [], G: [] };
     (paper.questions || []).forEach(q => {
         const secKey = (q.section && sData[q.section]) ? q.section : 'None';
         sData[secKey].push(q);
@@ -353,9 +392,10 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
                         html += renderInstructionRowHTML(`&#9656; ${q.text}`, marksBadge, 'auto-inst-bar', forWord);
                     }
                 } else {
-                    const qNum = (pdfSet.numbering === 'continuous' || sec === "None") ? gQNum : sQNum;
+                    const qNum = (pdfSet.numbering === 'continuous' || sec === 'None') ? gQNum : sQNum;
                     const formattedQ = window.formatForPDF(q, lang, forWord);
-                    const tblSplitIdx = formattedQ.indexOf('<div class="gv-table-scroll">');
+                    const tblSplitMatch = formattedQ.match(/<div\s+class="gv-table-scroll"/i);
+                    const tblSplitIdx = tblSplitMatch ? tblSplitMatch.index : -1;
                     const hasQTable = tblSplitIdx !== -1;
                     const qImgHTML = (q.image && !formattedQ.includes('gv-mcq-img-placed'))
                         ? window.renderImageBlockForPDF(q.image, q.imageWidth || '220px', q.imageAlign || 'center', forWord)
@@ -382,7 +422,7 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
                     html += `<table class="q-row-table${hasAnyTable ? ' has-data-table' : ''}">`;
 
                     if (hasQTable) {
-                        const beforeTbl = formattedQ.slice(0, tblSplitIdx).trim();
+                        const beforeTbl = formattedQ.slice(0, tblSplitIdx).replace(/(?:<br\s*\/?>|\s)+$/gi, '').trim();
                         const fromTbl = formattedQ.slice(tblSplitIdx).trim();
                         if (beforeTbl) {
                             html += `<tr><td class="q-cell-text"><strong>${qNum}.</strong> ${beforeTbl}</td><td class="q-cell-marks">[${q.marks}]</td></tr>`;
@@ -409,9 +449,9 @@ window.generatePaperHTML = function(paper, type, forWord = false) {
 
 window.generatePaperHTMLStr = window.generatePaperHTML;
 
-window.formatForPDF = function(q, paperLang = 'gu', forWord = false) {
+window.formatForPDF = function (q, paperLang = 'gu', forWord = false) {
     const fmt = window.formatScienceAndMath || ((x) => x);
-    let t = fmt(q.text || '');
+    const t = fmt(q.text || '');
     if (q.type === 'MCQ') {
         const parts = t.split(/\(A\)|\(B\)|\(C\)|\(D\)/);
         if (parts.length === 5) {
@@ -420,8 +460,8 @@ window.formatForPDF = function(q, paperLang = 'gu', forWord = false) {
                 : '';
             const stemHTML = parts[0].trim()
                 .replace(/\\n|\n/g, '<br>')
-                .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
-                .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
+                .replace(/(?:<br>\s*)+(<div class="gv-table-scroll")/g, '$1')
+                .replace(/(<\/table><\/div>)(?:\s*<br>)+/g, '$1');
             return `${stemHTML}${imgMid}<table class="mcq-table"><tr><td>(A) ${parts[1].trim()}</td><td>(B) ${parts[2].trim()}</td></tr><tr><td>(C) ${parts[3].trim()}</td><td>(D) ${parts[4].trim()}</td></tr></table>`;
         }
     }
@@ -430,20 +470,26 @@ window.formatForPDF = function(q, paperLang = 'gu', forWord = false) {
     }
     return t
         .replace(/\\n|\n/g, '<br>')
-        .replace(/<br>\s*<div class="gv-table-scroll">/g, '<div class="gv-table-scroll">')
-        .replace(/<\/table><\/div>\s*<br>/g, '</table></div>');
+        .replace(/(?:<br>\s*)+(<div class="gv-table-scroll")/g, '$1')
+        .replace(/(<\/table><\/div>)(?:\s*<br>)+/g, '$1');
 };
 
-window.formatAns = function(ans) {
+window.formatAns = function (ans) {
     const fmt = window.formatScienceAndMath || ((x) => x);
-    let formattedAns = fmt(ans || '');
-    let lines = formattedAns.split(/\\n|\n/);
+    const formattedAns = fmt(ans || '');
+    const lines = formattedAns.split(/\\n|\n/);
     if (lines.length > 1) {
         return lines.map(l => {
             const tr = l.trim();
             if (!tr) return '';
-            if (tr.includes('<div class="gv-table-scroll">') || /^<table\b/i.test(tr)) {
+            const tblIdx = tr.search(/<div\s+class="gv-table-scroll"|<table\b/i);
+            if (tblIdx === 0) {
                 return `<div style="margin:6px 0;">${tr}</div>`;
+            }
+            if (tblIdx > 0) {
+                const preText = tr.slice(0, tblIdx).trim();
+                const tblPart = tr.slice(tblIdx).trim();
+                return `<div style="margin-bottom:4px;">&#8226; ${preText}</div><div style="margin:6px 0;">${tblPart}</div>`;
             }
             return `<div style="margin-bottom:5px;">&#8226; ${tr}</div>`;
         }).join('');
@@ -451,36 +497,37 @@ window.formatAns = function(ans) {
     return formattedAns;
 };
 
-window.formatDateDDMMYYYY = function(dateStr) {
-    if (!dateStr) return "";
+window.formatDateDDMMYYYY = function (dateStr) {
+    if (!dateStr) return '';
     const p = dateStr.split('-');
     return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr;
 };
 
-window.parseMatchTextGlobal = function(text, lang = 'gu') {
+window.parseMatchTextGlobal = function (text, lang = 'gu') {
     const L = window.GV_LANG_LABELS[lang] || window.GV_LANG_LABELS.gu;
-    let lines = (text || '').split(/\\n|\n/);
-    let colA = [], colB = [], otherLines = [];
+    const lines = (text || '').split(/\\n|\n/);
+    const colA = [], colB = [], otherLines = [];
     let html = '<table style="width:100%; table-layout:fixed; word-wrap:break-word; font-size:14.5px; margin-top:6px; margin-bottom:4px; border-collapse:collapse; page-break-inside:avoid; border:none; text-align:left;">';
     html += `<tr><td style="width:50%; font-weight:bold; padding-bottom:4px; border:none; text-align:left;">${L.colA}</td><td style="width:50%; font-weight:bold; padding-bottom:4px; border:none; text-align:left;">${L.colB}</td></tr>`;
 
     lines.forEach(l => {
         l = l.trim();
         if (!l || l.includes('વિભાગ A') || l.includes('વિભાગ B') || l.includes('Column A') || l.includes('Column B') || l.includes('યોગ્ય જોડકા જોડો')) return;
-        let parts = l.split(/\s{2,}|\t+| - | – /);
+        const parts = l.split(/\s{2,}|\t+| - | – /);
         if (parts.length >= 2 && parts[1].trim() !== '') { colA.push(parts[0].trim()); colB.push(parts.slice(1).join(' ').trim()); return; }
-        let fallbackRegex = /^(.*?\S)\s+(\([a-zA-Zઅ-જ]\)|[a-zA-Zઅ-જ][\.\)])\s*(.*)$/;
-        let match = l.match(fallbackRegex);
+        const fallbackRegex = /^(.*?\S)\s+(\([a-zA-Zઅ-જ]\)|[a-zA-Zઅ-જ][\.\)])\s*(.*)$/;
+        const match = l.match(fallbackRegex);
         if (match) { colA.push(match[1].trim()); colB.push(`${match[2]} ${match[3].trim()}`); }
         else if (l.match(/^(\d+[\.\)]|\(\d+\))\s+/)) colA.push(l);
         else if (l.match(/^([a-zA-Zઅ-જ][\.\)]|\([a-zA-Zઅ-જ]\))\s+/)) colB.push(l);
         else otherLines.push(l);
     });
 
-    let maxLen = Math.max(colA.length, colB.length);
+    const maxLen = Math.max(colA.length, colB.length);
     for (let i = 0; i < maxLen; i++) html += `<tr><td style="width:50%; padding-right:10px; vertical-align:middle; padding-bottom:6px; border:none;">${colA[i] || ''}</td><td style="width:50%; vertical-align:middle; padding-bottom:6px; border:none;">${colB[i] || ''}</td></tr>`;
     otherLines.forEach(l => {
-        let mid = Math.floor(l.length / 2), splitIdx = l.indexOf(' ', mid - 5);
+        const mid = Math.floor(l.length / 2);
+        let splitIdx = l.indexOf(' ', mid - 5);
         if (splitIdx === -1) splitIdx = l.lastIndexOf(' ', mid + 5);
         if (splitIdx !== -1 && splitIdx > 0) html += `<tr><td style="width:50%; padding-right:10px; vertical-align:middle; padding-bottom:6px; border:none;">${l.substring(0, splitIdx).trim()}</td><td style="width:50%; vertical-align:middle; padding-bottom:6px; border:none;">${l.substring(splitIdx).trim()}</td></tr>`;
         else html += `<tr><td colspan="2" style="vertical-align:middle; padding-bottom:6px; border:none;">${l}</td></tr>`;
